@@ -30,6 +30,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# 初始化 session state
+if "page" not in st.session_state:
+    st.session_state.page = "首页"
+
 # ============================================================
 # 自定义样式
 # ============================================================
