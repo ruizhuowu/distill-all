@@ -153,8 +153,11 @@ st.markdown("""
     section[data-testid="stSidebar"] .stRadio > div {
         gap: 4px;
     }
+    section[data-testid="stSidebar"] .stRadio > div > div {
+        opacity: 1 !important;
+    }
     section[data-testid="stSidebar"] label {
-        color: #e0e4f0 !important;
+        color: #e8ecf4 !important;
         font-size: 0.95rem !important;
         padding: 0.5rem 0.8rem !important;
         border-radius: 8px !important;
