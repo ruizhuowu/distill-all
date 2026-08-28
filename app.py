@@ -452,11 +452,14 @@ elif current_page == "模型设置":
 
     st.markdown("### API 配置")
 
+    model_type_options = ["math", "text"]
+    mt_idx = model_type_options.index(st.session_state.model_type) if st.session_state.model_type in model_type_options else 0
     st.session_state.model_type = st.radio(
         "当前选择的模型类型",
-        ["math", "text"],
-        format_func=lambda x: "🧮 数学推理型" if x == "math" else "📖 文本处理型",
+        model_type_options,
+        format_func=lambda x: ("🧮 数学推理型" if x == "math" else "📖 文本处理型"),
         horizontal=True,
+        index=mt_idx,
     )
 
     st.session_state.api_key = st.text_input(
