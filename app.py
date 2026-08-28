@@ -35,36 +35,182 @@ if "page" not in st.session_state:
     st.session_state.page = "首页"
 
 # ============================================================
-# 自定义样式
+# 全局样式（渐变科技风）
 # ============================================================
 
 st.markdown("""
 <style>
-    .main-header {
-        text-align: center;
-        padding: 2rem 0 1rem;
+    /* ========== 全局基础 ========== */
+    .stApp {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     }
-    .main-header h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
+    .main .block-container {
+        max-width: 1100px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
     }
-    .main-header p {
-        font-size: 1.1rem;
-        color: #666;
+
+    /* ========== 渐变文字 ========== */
+    .gradient-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 800;
     }
+
+    /* ========== 按钮渐变 ========== */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 0.6rem 1.5rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+    }
+    .stButton > button[kind="secondary"] {
+        background: white !important;
+        color: #667eea !important;
+        border: 2px solid #667eea !important;
+        box-shadow: none !important;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        background: #f0f0ff !important;
+    }
+
+    /* ========== 卡片通用 ========== */
+    .card {
+        background: white;
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f6;
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.12);
+        border-color: #667eea;
+    }
+
+    /* ========== 蒸馏方式卡片 ========== */
     .method-card {
-        padding: 1rem;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
+        background: white;
+        border-radius: 14px;
+        padding: 1.5rem;
         text-align: center;
-        transition: all 0.2s;
+        border: 2px solid #eef0f6;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
     .method-card:hover {
-        border-color: #4CAF50;
-        background: #f9fff9;
+        border-color: #667eea;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+        transform: translateY(-4px);
     }
-    .stAlert { margin-top: 0.5rem; }
+    .method-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .method-card .name { font-weight: 700; font-size: 1.05rem; color: #1a1a2e; margin-bottom: 0.3rem; }
+    .method-card .desc { font-size: 0.85rem; color: #888; }
+
+    /* ========== 步骤引导 ========== */
+    .step-card {
+        background: white;
+        border-radius: 14px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid #eef0f6;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+    .step-num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px; height: 36px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+    }
+
+    /* ========== 侧边栏 ========== */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%) !important;
+    }
+    section[data-testid="stSidebar"] .stRadio > div {
+        gap: 4px;
+    }
+    section[data-testid="stSidebar"] label {
+        color: #c0c8e0 !important;
+        font-size: 0.95rem !important;
+        padding: 0.5rem 0.8rem !important;
+        border-radius: 8px !important;
+        transition: all 0.2s !important;
+    }
+    section[data-testid="stSidebar"] label:hover {
+        background: rgba(102, 126, 234, 0.15) !important;
+        color: white !important;
+    }
+    section[data-testid="stSidebar"] input:checked + label,
+    section[data-testid="stSidebar"] label:has(input:checked) {
+        background: rgba(102, 126, 234, 0.25) !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    /* ========== 标签 ========== */
+    .tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .tag-primary {
+        background: linear-gradient(135deg, #667eea22, #764ba222);
+        color: #667eea;
+    }
+
+    /* ========== 结果卡片 ========== */
+    .result-card {
+        background: white;
+        border-radius: 14px;
+        padding: 2rem;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f6;
+    }
+
+    /* ========== 输入框 ========== */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div,
+    .stTextArea > div > div > textarea {
+        border-radius: 10px !important;
+        border: 1.5px solid #e0e4f0 !important;
+        transition: border-color 0.2s !important;
+    }
+    .stTextInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    }
+
+    /* ========== 通用 ========== */
+    .stAlert { margin-top: 0.5rem; border-radius: 10px !important; }
     div[data-testid="stSidebar"] { min-width: 240px; }
+    hr { border-color: #eef0f6 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -87,6 +233,10 @@ defaults = {
     "llm_error": None,
     "api_preset": "阿里云 DashScope（通义千问）",
     "api_model_name": "qwen-plus",
+    "smtp_host": "smtp.qq.com",
+    "smtp_port": 465,
+    "smtp_email": "2687033737@qq.com",
+    "smtp_auth_code": "",
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -97,11 +247,18 @@ for k, v in defaults.items():
 # ============================================================
 
 with st.sidebar:
-    st.markdown("## 🧪 一切皆蒸馏")
-    st.markdown("*把任何学习材料变成你的备考系统*")
+    # Logo 区域
+    st.markdown(
+        "<div style='text-align:center; padding: 1.5rem 0 1rem;'>"
+        "<div style='font-size:2.2rem; margin-bottom:0.3rem;'>🧪</div>"
+        "<div class='gradient-title' style='font-size:1.5rem; margin-bottom:0.3rem;'>一切皆蒸馏</div>"
+        "<div style='color:#8892b0; font-size:0.85rem;'>把任何学习材料变成你的备考系统</div>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
     st.markdown("---")
 
-    # 页面 key → 带 emoji 标签的映射
+    # 导航
     page_labels = ["🏠 首页", "🧪 开始蒸馏", "📚 知识骨架", "⚙️ 模型设置", "💬 反馈"]
     page_keys = ["首页", "开始蒸馏", "知识骨架", "模型设置", "反馈"]
     default_idx = page_keys.index(st.session_state.page) if st.session_state.page in page_keys else 0
@@ -113,7 +270,6 @@ with st.sidebar:
         label_visibility="collapsed",
     )
 
-    # 映射到页面key
     page_map = {
         "🏠 首页": "首页",
         "🧪 开始蒸馏": "开始蒸馏",
@@ -121,72 +277,129 @@ with st.sidebar:
         "⚙️ 模型设置": "模型设置",
         "💬 反馈": "反馈",
     }
-    current_page = page_map[page]
+    current_page = page_map.get(page, "首页")
     st.session_state.page = current_page
 
     st.markdown("---")
     st.markdown(
-        "<div style='text-align:center; color:#999; font-size:0.8rem;'>"
-        "v0.1 Demo · 一切皆蒸馏</div>",
-        unsafe_allow_html=True
+        "<div style='text-align:center; color:#5a6380; font-size:0.75rem; padding: 0.5rem 0;'>"
+        "v0.2 · 一切皆蒸馏</div>",
+        unsafe_allow_html=True,
     )
 
+
 # ============================================================
-# 首页
+# 首页（Landing Page 风格）
 # ============================================================
 
 if current_page == "首页":
-    st.markdown('<div class="main-header">', unsafe_allow_html=True)
-    st.markdown("# 🧪 一切皆蒸馏")
-    st.markdown("#### 把任何学习材料变成你自己的备考系统")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("---")
+    # Hero 区
+    st.markdown(
+        "<div style='text-align:center; padding: 3rem 0 1.5rem;'>"
+        "<div style='font-size:3.5rem; margin-bottom:0.5rem;'>🧪</div>"
+        "<h1 class='gradient-title' style='font-size:2.8rem; margin-bottom:0.5rem;'>"
+        "一切皆蒸馏</h1>"
+        "<p style='color:#8892b0; font-size:1.2rem; max-width:600px; margin:0 auto 1.5rem;'>"
+        "把任何学习材料变成你自己的备考系统</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
-    # 产品介绍
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("### 📤 上传材料")
-        st.markdown("PDF课件、文本笔记、习题集——任何学习材料都能导入")
+    # CTA 按钮
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        st.markdown("### 🧪 选择蒸馏方式")
-        st.markdown("6种标准化蒸馏方式，从提纲到费曼到Cornell笔记")
-    with col3:
-        st.markdown("### 📝 获得备考系统")
-        st.markdown("结构化笔记 + 自测题 + 可编辑，变成你自己的复习体系")
-
-    st.markdown("---")
-
-    # 蒸馏方式一览
-    st.markdown("### 六种蒸馏方式")
-    cols = st.columns(3)
-    method_items = list(METHODS.items())
-    for i, (key, info) in enumerate(method_items):
-        with cols[i % 3]:
-            st.markdown(f"#### {info['icon']} {info['name']}")
-            st.markdown(f"*{info['desc']}*")
-
-    st.markdown("---")
-
-    # 快速开始
-    st.markdown("### 🚀 快速开始")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("上传材料开始蒸馏", use_container_width=True):
+        if st.button("🚀 立即开始蒸馏", use_container_width=True, type="primary"):
             st.session_state.page = "开始蒸馏"
             st.rerun()
-    with col2:
-        if st.button("浏览预建知识骨架", use_container_width=True):
-            st.session_state.page = "知识骨架"
-            st.rerun()
+    st.markdown(
+        "<div style='text-align:center; margin-bottom:2rem;'>"
+        "<span style='color:#8892b0; font-size:0.9rem;'>"
+        "支持 PDF / TXT / MD 格式上传，也可以从预建知识骨架中选择</span>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown("---")
+
+    # 三步引导
     st.markdown(
-        "<div style='text-align:center; color:#888; font-size:0.9rem;'>"
-        "💡 也可以先浏览「知识骨架」，看看高数、线代、大物的预建知识框架"
+        "<div style='text-align:center; margin-bottom:1.5rem;'>"
+        "<h2 style='font-weight:700; color:#1a1a2e;'>三步完成知识蒸馏</h2>"
         "</div>",
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
+
+    step1, step2, step3 = st.columns(3)
+    with step1:
+        st.markdown(
+            "<div class='step-card'>"
+            "<div class='step-num'>1</div>"
+            "<div style='font-size:2rem; margin-bottom:0.5rem;'>📤</div>"
+            "<div style='font-weight:700; font-size:1.05rem; margin-bottom:0.3rem;'>上传材料</div>"
+            "<div style='color:#888; font-size:0.85rem;'>PDF课件、笔记、习题集——任何学习材料都能导入</div>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    with step2:
+        st.markdown(
+            "<div class='step-card'>"
+            "<div class='step-num'>2</div>"
+            "<div style='font-size:2rem; margin-bottom:0.5rem;'>🧪</div>"
+            "<div style='font-weight:700; font-size:1.05rem; margin-bottom:0.3rem;'>选择蒸馏方式</div>"
+            "<div style='color:#888; font-size:0.85rem;'>6种标准化蒸馏方式，从提纲到费曼到Cornell笔记</div>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+    with step3:
+        st.markdown(
+            "<div class='step-card'>"
+            "<div class='step-num'>3</div>"
+            "<div style='font-size:2rem; margin-bottom:0.5rem;'>📝</div>"
+            "<div style='font-weight:700; font-size:1.05rem; margin-bottom:0.3rem;'>获得备考系统</div>"
+            "<div style='color:#888; font-size:0.85rem;'>结构化笔记 + 自测题 + 可编辑，变成你的复习体系</div>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    # 六种蒸馏方式卡片
+    st.markdown(
+        "<div style='text-align:center; margin-bottom:1.5rem;'>"
+        "<h2 style='font-weight:700; color:#1a1a2e;'>六种蒸馏方式</h2>"
+        "<p style='color:#8892b0; font-size:0.95rem;'>每一种都是经过设计的知识内化方法</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    method_items = list(METHODS.items())
+    row1 = st.columns(3)
+    row2 = st.columns(3)
+    for i, (key, info) in enumerate(method_items):
+        col = row1[i % 3] if i < 3 else row2[i % 3]
+        with col:
+            st.markdown(
+                f"<div class='method-card'>"
+                f"<div class='icon'>{info['icon']}</div>"
+                f"<div class='name'>{info['name']}</div>"
+                f"<div class='desc'>{info['desc']}</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("---")
+
+    # 底部引导
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📚 浏览预建知识骨架", use_container_width=True):
+            st.session_state.page = "知识骨架"
+            st.rerun()
+    with col2:
+        if st.button("⚙️ 配置模型设置", use_container_width=True):
+            st.session_state.page = "模型设置"
+            st.rerun()
 
 
 # ============================================================
@@ -195,60 +408,78 @@ if current_page == "首页":
 
 elif current_page == "开始蒸馏":
 
-    st.markdown("# 🧪 开始蒸馏")
+    st.markdown(
+        "<div style='margin-bottom:1.5rem;'>"
+        "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
+        "🧪 开始蒸馏</h1>"
+        "<p style='color:#8892b0;'>上传材料→ 选择方式→ 获取你的备考笔记</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     # 检查是否有已蒸馏的结果
     if st.session_state.distill_result is not None:
-        st.success("蒸馏完成！查看结果 ")
-
-        # 显示蒸馏结果
         result = st.session_state.edited_result or st.session_state.distill_result
 
-        # 编辑区域
-        st.markdown("### 蒸馏结果")
-        st.markdown(f"**蒸馏方式：** {st.session_state.distill_method}")
-        st.markdown(f"**材料标题：** {st.session_state.distill_title}")
+        # 成功横幅 + 元信息卡片
+        st.markdown(
+            "<div style='background: linear-gradient(135deg, #667eea11, #764ba211); "
+            "border-radius:14px; padding:1.5rem 2rem; margin-bottom:1.5rem; "
+            "border:1px solid #667eea33;'>"
+            "<div style='font-size:1.3rem; font-weight:700; color:#1a1a2e; margin-bottom:0.5rem;'>"
+            "✅ 蒸馏完成！</div>"
+            f"<span class='tag tag-primary'>{st.session_state.distill_method}</span>"
+            f"&nbsp;&nbsp;<span class='tag' style='background:#f0f0f0; color:#555;'>"
+            f"{st.session_state.distill_title}</span>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
 
         # 如果LLM调用失败，显示警告
         if st.session_state.get("llm_error"):
             st.warning(f"⚠️ {st.session_state.llm_error}")
             st.info("👇 以下为模板模式生成的结果，配置有效 API Key 后可获得更高质量的 LLM 蒸馏。")
 
-        # Markdown渲染预览
-        st.markdown("---")
+        # 结果卡片
+        st.markdown(
+            "<div class='result-card'>"
+            "<div style='font-weight:600; color:#667eea; font-size:0.9rem; margin-bottom:1rem;'>"
+            "📄 蒸馏结果预览</div>",
+            unsafe_allow_html=True,
+        )
         st.markdown(result)
-        st.markdown("---")
+        st.markdown("</div>", unsafe_allow_html=True)
 
         # 编辑模式
         with st.expander("📝 编辑蒸馏结果", expanded=False):
             edited = st.text_area(
                 "直接编辑Markdown内容",
                 value=st.session_state.edited_result or st.session_state.distill_result,
-                height=400,
+                height=300,
                 key="edit_area"
             )
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("保存修改"):
+            ec1, ec2 = st.columns(2)
+            with ec1:
+                if st.button("保存修改", key="save_edit"):
                     st.session_state.edited_result = edited
                     st.rerun()
-            with col2:
-                if st.button("放弃修改"):
+            with ec2:
+                if st.button("放弃修改", key="discard_edit"):
                     st.session_state.edited_result = None
                     st.rerun()
 
-        # 导出
-        st.markdown("### 导出")
-        col1, col2 = st.columns(2)
-        with col1:
+        # 导出按钮
+        st.markdown("")
+        col_e1, col_e2 = st.columns(2)
+        with col_e1:
             st.download_button(
-                "📥 下载 Markdown 文件",
+                "📥 下载 Markdown",
                 data=result,
                 file_name=f"{st.session_state.distill_title}_蒸馏结果.md",
                 mime="text/markdown",
                 use_container_width=True,
             )
-        with col2:
+        with col_e2:
             if st.button("🔄 蒸馏新材料", use_container_width=True):
                 st.session_state.distill_result = None
                 st.session_state.edited_result = None
@@ -313,8 +544,8 @@ elif current_page == "开始蒸馏":
             info = METHODS[key]
             with method_cols[i % 3]:
                 is_chosen = (st.session_state.get("chosen_method") == key)
-                border_color = "#4CAF50" if is_chosen else "#e0e0e0"
-                bg_color = "#f0fff0" if is_chosen else "white"
+                border_color = "#667eea" if is_chosen else "#e0e0e0"
+                bg_color = "#f0f0ff" if is_chosen else "white"
                 st.markdown(
                     f"""<div style="padding:1rem; border:2px solid {border_color}; border-radius:8px;
                         background:{bg_color}; text-align:center; cursor:pointer; min-height:80px;"
@@ -398,32 +629,64 @@ elif current_page == "开始蒸馏":
 # ============================================================
 
 elif current_page == "知识骨架":
-    st.markdown("# 📚 知识骨架")
-    st.markdown("平台预建的知识框架，覆盖高频考试科目。可以直接基于这些骨架进行蒸馏，也可以上传自己的材料。")
-    st.markdown("---")
+    st.markdown(
+        "<div style='margin-bottom:1.5rem;'>"
+        "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
+        "📚 知识骨架</h1>"
+        "<p style='color:#8892b0;'>平台预建的知识框架，覆盖高频考试科目</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     courses = get_courses()
+
+    # 课程卡片展示
+    st.markdown(
+        "<div style='font-weight:600; color:#1a1a2e; margin-bottom:0.8rem;'>"
+        "🎓 选择课程</div>",
+        unsafe_allow_html=True,
+    )
+    course_cols = st.columns(min(len(courses), 3))
+    for i, c in enumerate(courses):
+        with course_cols[i % len(course_cols)]:
+            st.markdown(
+                f"<div class='card' style='text-align:center; cursor:pointer;'>"
+                f"<div style='font-size:2rem;'>{c['icon']}</div>"
+                f"<div style='font-weight:700; margin:0.3rem 0;'>{c['name']}</div>"
+                f"<div style='color:#888; font-size:0.85rem;'>{c['desc']}</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
     course_names = [f"{c['icon']} {c['name']}" for c in courses]
     selected = st.selectbox("选择课程", course_names)
     idx = course_names.index(selected)
     course = courses[idx]
 
-    st.markdown(f"**{course['desc']}**")
-    st.markdown("---")
+    st.markdown("")
 
     # 章节导航
+    st.markdown(
+        f"<div style='font-weight:600; color:#1a1a2e; margin-bottom:0.5rem;'>"
+        f"📖 {course['name']} - 章节选择</div>",
+        unsafe_allow_html=True,
+    )
     chapter_names = [ch["title"] for ch in course["chapters"]]
     selected_ch = st.selectbox("选择章节", chapter_names)
     ch_idx = chapter_names.index(selected_ch)
     chapter = course["chapters"][ch_idx]
 
-    st.markdown("---")
+    st.markdown("")
+    st.markdown(
+        "<div class='result-card'>",
+        unsafe_allow_html=True,
+    )
     st.markdown(render_chapter(chapter))
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("---")
-    if st.button(f"🧪 基于「{course['name']}」开始蒸馏"):
+    st.markdown("")
+    if st.button(f"🧪 基于「{course['name']}」开始蒸馏", use_container_width=True, type="primary"):
         st.session_state.page = "开始蒸馏"
-        # 预设知识骨架为源
         full_text = "\n---\n".join(render_chapter(ch) for ch in course["chapters"])
         st.session_state["skeleton_text"] = full_text
         st.session_state["source_type"] = "skeleton"
@@ -436,27 +699,51 @@ elif current_page == "知识骨架":
 # ============================================================
 
 elif current_page == "模型设置":
-    st.markdown("# ⚙️ 模型设置")
-    st.markdown("配置蒸馏引擎使用的大模型API。支持任何 OpenAI 兼容格式的 API（DashScope、DeepSeek、SiliconFlow 等）。")
+    st.markdown(
+        "<div style='margin-bottom:1.5rem;'>"
+        "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
+        "⚙️ 模型设置</h1>"
+        "<p style='color:#8892b0;'>配置蒸馏引擎使用的大模型 API，支持任何 OpenAI 兼容格式</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("---")
-
-    st.markdown("### 模型类型")
-    st.markdown("针对不同科目选择不同类型的模型，获得更好的蒸馏效果：")
+    # 模型类型卡片
+    st.markdown(
+        "<div style='font-weight:600; color:#1a1a2e; margin-bottom:0.8rem;'>"
+        "🎯 选择模型类型</div>",
+        unsafe_allow_html=True,
+    )
 
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("#### 🧮 数学推理型")
-        st.markdown("适合：高数、线代、大物计算题等")
-        st.markdown("推荐：DeepSeek-R1、Qwen-Math")
+        st.markdown(
+            "<div class='card' style='text-align:center; cursor:pointer;'>"
+            "<div style='font-size:1.8rem;'>🧮</div>"
+            "<div style='font-weight:700; margin:0.3rem 0;'>数学推理型</div>"
+            "<div style='color:#888; font-size:0.85rem;'>高数、线代、大物计算题</div>"
+            "<div style='color:#667eea; font-size:0.8rem; margin-top:0.3rem;'>DeepSeek-R1 / Qwen-Math</div>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
     with col2:
-        st.markdown("#### 📖 文本处理型")
-        st.markdown("适合：文科、概念理解、长篇材料等")
-        st.markdown("推荐：Qwen-Plus、GLM-4")
+        st.markdown(
+            "<div class='card' style='text-align:center; cursor:pointer;'>"
+            "<div style='font-size:1.8rem;'>📖</div>"
+            "<div style='font-weight:700; margin:0.3rem 0;'>文本处理型</div>"
+            "<div style='color:#888; font-size:0.85rem;'>文科、概念理解、长篇材料</div>"
+            "<div style='color:#667eea; font-size:0.8rem; margin-top:0.3rem;'>Qwen-Plus / GLM-4</div>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
 
-    st.markdown("---")
+    st.markdown("")
 
-    st.markdown("### API 配置")
+    st.markdown(
+        "<div style='font-weight:600; color:#1a1a2e; margin-bottom:0.8rem;'>"
+        "🔑 API 配置</div>",
+        unsafe_allow_html=True,
+    )
 
     model_type_options = ["math", "text"]
     mt_idx = model_type_options.index(st.session_state.model_type) if st.session_state.model_type in model_type_options else 0
@@ -529,6 +816,46 @@ elif current_page == "模型设置":
 
     st.markdown("---")
 
+    st.markdown("### SMTP 邮件配置（反馈功能）")
+    st.markdown("配置后，用户提交的反馈会通过邮件发送到你指定的邮箱。")
+
+    st.session_state.smtp_host = st.text_input(
+        "SMTP 服务器",
+        value=st.session_state.get("smtp_host", "smtp.qq.com"),
+        placeholder="smtp.qq.com",
+        help="QQ邮箱: smtp.qq.com | 163邮箱: smtp.163.com | 阿里邮箱: smtp.aliyun.com"
+    )
+
+    st.session_state.smtp_port = st.number_input(
+        "SMTP 端口",
+        value=st.session_state.get("smtp_port", 465),
+        min_value=1,
+        max_value=65535,
+        help="SSL端口通常为465，TLS端口通常为587"
+    )
+
+    st.session_state.smtp_email = st.text_input(
+        "发件邮箱",
+        value=st.session_state.get("smtp_email", "2687033737@qq.com"),
+        placeholder="your-email@qq.com",
+        help="用于发送反馈邮件的邮箱地址"
+    )
+
+    st.session_state.smtp_auth_code = st.text_input(
+        "SMTP 授权码",
+        value=st.session_state.get("smtp_auth_code", ""),
+        type="password",
+        placeholder="在邮箱设置中生成的授权码（不是登录密码）",
+        help="QQ邮箱：设置 → 账户 → POP3/SMTP服务 → 生成授权码"
+    )
+
+    if st.session_state.get("smtp_auth_code"):
+        st.success("✅ SMTP已配置，反馈将自动发送邮件")
+    else:
+        st.warning("⚠️ 未配置SMTP授权码，反馈仅保存到本地")
+
+    st.markdown("---")
+
     # 状态显示
     if st.session_state.api_key:
         st.success(f"✅ API已配置")
@@ -548,9 +875,14 @@ elif current_page == "模型设置":
 # ============================================================
 
 elif current_page == "反馈":
-    st.markdown("# 💬 产品反馈")
-    st.markdown("你的每一条反馈都会直接发送到产品负责人的邮箱，帮助我们改进产品。")
-    st.markdown("---")
+    st.markdown(
+        "<div style='margin-bottom:1.5rem;'>"
+        "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
+        "💬 产品反馈</h1>"
+        "<p style='color:#8892b0;'>你的反馈会直接发送到产品负责人邮箱</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
     with st.form("feedback_form"):
         feedback_type = st.selectbox(
@@ -569,14 +901,31 @@ elif current_page == "反馈":
         submitted = st.form_submit_button("📮 提交反馈", use_container_width=True, type="primary")
 
         if submitted and feedback_content.strip():
-            # 尝试发送邮件
-            try:
-                msg = MIMEMultipart()
-                msg["From"] = "2687033737@qq.com"
-                msg["To"] = "2687033737@qq.com"
-                msg["Subject"] = f"[一切皆蒸馏反馈] {feedback_type}"
+            # 保存反馈到本地（始终执行）
+            feedback_file = os.path.join(os.path.dirname(__file__), "data", "feedbacks.txt")
+            os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
+            with open(feedback_file, "a", encoding="utf-8") as f:
+                f.write(f"\n{'='*50}\n")
+                f.write(f"时间：{time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"类型：{feedback_type}\n")
+                f.write(f"联系方式：{feedback_email or '未填写'}\n")
+                f.write(f"内容：{feedback_content}\n")
 
-                body = f"""反馈类型：{feedback_type}
+            # 尝试发送邮件
+            smtp_auth_code = st.session_state.get("smtp_auth_code", "")
+            smtp_host = st.session_state.get("smtp_host", "smtp.qq.com")
+            smtp_port = st.session_state.get("smtp_port", 465)
+            smtp_email = st.session_state.get("smtp_email", "2687033737@qq.com")
+
+            email_sent = False
+            if smtp_auth_code:
+                try:
+                    msg = MIMEMultipart()
+                    msg["From"] = smtp_email
+                    msg["To"] = smtp_email
+                    msg["Subject"] = f"[一切皆蒸馏反馈] {feedback_type}"
+
+                    body = f"""反馈类型：{feedback_type}
 用户联系方式：{feedback_email or '未填写'}
 
 反馈内容：
@@ -585,33 +934,22 @@ elif current_page == "反馈":
 ---
 来自「一切皆蒸馏」产品反馈系统
 """
-                msg.attach(MIMEText(body, "plain", "utf-8"))
+                    msg.attach(MIMEText(body, "plain", "utf-8"))
 
-                # 注意：这里需要SMTP授权码才能发送
-                # Demo阶段先保存反馈到本地
-                feedback_file = os.path.join(os.path.dirname(__file__), "data", "feedbacks.txt")
-                os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
-                with open(feedback_file, "a", encoding="utf-8") as f:
-                    f.write(f"\n{'='*50}\n")
-                    f.write(f"时间：{time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"类型：{feedback_type}\n")
-                    f.write(f"联系方式：{feedback_email or '未填写'}\n")
-                    f.write(f"内容：{feedback_content}\n")
+                    server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+                    server.login(smtp_email, smtp_auth_code)
+                    server.sendmail(smtp_email, [smtp_email], msg.as_string())
+                    server.quit()
+                    email_sent = True
+                except Exception as e:
+                    st.warning(f"邮件发送失败：{str(e)}")
 
-                st.success("✅ 反馈已收到！感谢你的宝贵意见。")
+            st.success("✅ 反馈已收到！感谢你的宝贵意见。")
+
+            if email_sent:
+                st.info(" 反馈已通过邮件发送。")
+            else:
                 st.info("📧 邮件发送功能需要配置SMTP授权码，当前反馈已保存到本地。")
-
-            except Exception as e:
-                # 即使邮件发送失败，也保存本地
-                feedback_file = os.path.join(os.path.dirname(__file__), "data", "feedbacks.txt")
-                os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
-                with open(feedback_file, "a", encoding="utf-8") as f:
-                    f.write(f"\n{'='*50}\n")
-                    f.write(f"时间：{time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"类型：{feedback_type}\n")
-                    f.write(f"联系方式：{feedback_email or '未填写'}\n")
-                    f.write(f"内容：{feedback_content}\n")
-                st.success("✅ 反馈已保存到本地！")
 
         elif submitted:
             st.warning("请填写反馈内容后再提交")
