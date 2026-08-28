@@ -154,11 +154,12 @@ st.markdown("""
         gap: 4px;
     }
     section[data-testid="stSidebar"] label {
-        color: #c0c8e0 !important;
+        color: #e0e4f0 !important;
         font-size: 0.95rem !important;
         padding: 0.5rem 0.8rem !important;
         border-radius: 8px !important;
         transition: all 0.2s !important;
+        opacity: 1 !important;
     }
     section[data-testid="stSidebar"] label:hover {
         background: rgba(102, 126, 234, 0.15) !important;
@@ -251,8 +252,8 @@ with st.sidebar:
     st.markdown(
         "<div style='text-align:center; padding: 1.5rem 0 1rem;'>"
         "<div style='font-size:2.2rem; margin-bottom:0.3rem;'>🧪</div>"
-        "<div class='gradient-title' style='font-size:1.5rem; margin-bottom:0.3rem;'>一切皆蒸馏</div>"
-        "<div style='color:#8892b0; font-size:0.85rem;'>把任何学习材料变成你的备考系统</div>"
+        "<div style='color:#ffffff; font-size:1.5rem; margin-bottom:0.3rem; font-weight:800;'>一切皆蒸馏</div>"
+        "<div style='color:#c8d0e8; font-size:0.85rem;'>把任何学习材料变成你的备考系统</div>"
         "</div>",
         unsafe_allow_html=True,
     )
@@ -282,7 +283,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown(
-        "<div style='text-align:center; color:#5a6380; font-size:0.75rem; padding: 0.5rem 0;'>"
+        "<div style='text-align:center; color:#8892b0; font-size:0.75rem; padding: 0.5rem 0;'>"
         "v0.2 · 一切皆蒸馏</div>",
         unsafe_allow_html=True,
     )
