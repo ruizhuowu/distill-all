@@ -97,12 +97,15 @@ with st.sidebar:
     st.markdown("*把任何学习材料变成你的备考系统*")
     st.markdown("---")
 
+    # 页面 key → 带 emoji 标签的映射
+    page_labels = ["🏠 首页", "🧪 开始蒸馏", "📚 知识骨架", "⚙️ 模型设置", "💬 反馈"]
+    page_keys = ["首页", "开始蒸馏", "知识骨架", "模型设置", "反馈"]
+    default_idx = page_keys.index(st.session_state.page) if st.session_state.page in page_keys else 0
+
     page = st.radio(
         "导航",
-        ["🏠 首页", "🧪 开始蒸馏", "📚 知识骨架", "⚙️ 模型设置", "💬 反馈"],
-        index=["🏠 首页", "🧪 开始蒸馏", "📚 知识骨架", "⚙️ 模型设置", "💬 反馈"]
-              .index(st.session_state.page) if st.session_state.page in
-              ["首页", "开始蒸馏", "知识骨架", "模型设置", "反馈"] else 0,
+        page_labels,
+        index=default_idx,
         label_visibility="collapsed",
     )
 
