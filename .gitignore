@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+data/feedbacks.txt
+.env
+*.egg-info/
+dist/
+build/
