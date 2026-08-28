@@ -85,6 +85,8 @@ defaults = {
     "custom_model_name": "",
     "chosen_method": "outline",  # 默认提纲式
     "llm_error": None,
+    "api_preset": "阿里云 DashScope（通义千问）",
+    "api_model_name": "qwen-plus",
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -465,11 +467,17 @@ elif current_page == "模型设置":
         help="你的API密钥，仅存于本地浏览器，不会上传到服务器"
     )
 
-    # 预设API服务
+    # 预设API服务（用 session_state 记住选择）
+    preset_options = ["阿里云 DashScope（通义千问）", "DeepSeek", "SiliconFlow 硅基流动", "自定义"]
+    saved_preset = st.session_state.get("api_preset", preset_options[0])
+    saved_idx = preset_options.index(saved_preset) if saved_preset in preset_options else 0
+
     preset = st.selectbox(
         "选择API服务（或自定义）",
-        ["阿里云 DashScope（通义千问）", "DeepSeek", "SiliconFlow 硅基流动", "自定义"],
+        preset_options,
+        index=saved_idx,
     )
+    st.session_state.api_preset = preset
 
     preset_urls = {
         "阿里云 DashScope（通义千问）": "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -497,8 +505,11 @@ elif current_page == "模型设置":
 
     models = preset_models.get(preset, [])
     if models:
-        chosen_model = st.selectbox("选择模型", models)
+        saved_model = st.session_state.get("api_model_name", models[0])
+        model_idx = models.index(saved_model) if saved_model in models else 0
+        chosen_model = st.selectbox("选择模型", models, index=model_idx)
         st.session_state.model_name = chosen_model
+        st.session_state.api_model_name = chosen_model
     else:
         st.session_state.model_name = st.text_input(
             "模型名称",
