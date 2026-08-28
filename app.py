@@ -156,7 +156,10 @@ st.markdown("""
     section[data-testid="stSidebar"] .stRadio > div > div {
         opacity: 1 !important;
     }
-    section[data-testid="stSidebar"] label {
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] label span,
+    section[data-testid="stSidebar"] label p,
+    section[data-testid="stSidebar"] label div {
         color: #e8ecf4 !important;
         font-size: 0.95rem !important;
         padding: 0.5rem 0.8rem !important;
