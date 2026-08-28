@@ -30,7 +30,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# 初始化 session state
+# 初始化 session state（修复首次加载 ValueError）
 if "page" not in st.session_state:
     st.session_state.page = "首页"
 
