@@ -252,13 +252,16 @@ elif current_page == "开始蒸馏":
             if st.button("🔄 蒸馏新材料", use_container_width=True):
                 st.session_state.distill_result = None
                 st.session_state.edited_result = None
+                st.session_state.uploaded_file_bytes = None
+                st.session_state.uploaded_file_name = None
+                st.session_state.source_type = None
                 st.rerun()
 
     else:
         # 蒸馏输入界面
         st.markdown("### 第一步：选择内容来源")
 
-        source_tab1, source_tab2 = st.tabs(["📤 上传文件", "📚 从知识骨架选择"])
+        source_tab1, source_tab2 = st.tabs([" 上传文件", "📚 从知识骨架选择"])
 
         with source_tab1:
             uploaded_file = st.file_uploader(
@@ -267,7 +270,10 @@ elif current_page == "开始蒸馏":
                 help="上传你的课件、笔记、习题集等学习材料"
             )
             if uploaded_file:
-                st.session_state["uploaded_file"] = uploaded_file
+                # 立即读取文件内容并缓存，避免文件指针耗尽
+                file_bytes = uploaded_file.read()
+                st.session_state["uploaded_file_bytes"] = file_bytes
+                st.session_state["uploaded_file_name"] = uploaded_file.name
                 st.session_state["source_type"] = "upload"
                 st.success(f"已上传：{uploaded_file.name}（{uploaded_file.size/1024:.1f} KB）")
 
@@ -293,7 +299,7 @@ elif current_page == "开始蒸馏":
                         combined.append(render_chapter(ch))
                 skeleton_text = "\n---\n".join(combined)
                 st.session_state["skeleton_text"] = skeleton_text
-                st.session_state["source_type"] = "skeleton"
+                st.session_state["skeleton_source_type"] = "skeleton"
                 st.session_state["skeleton_title"] = f"{course['name']} - {' + '.join(selected_chapters)}"
                 st.info(f"已选择 {len(selected_chapters)} 个章节的知识骨架内容")
 
@@ -341,11 +347,11 @@ elif current_page == "开始蒸馏":
             source_title = title_input
 
             if st.session_state.get("source_type") == "upload":
-                uf = st.session_state.get("uploaded_file")
-                if uf:
-                    file_bytes = uf.read()
-                    source_text = extract_text(file_bytes, uf.name)
-                    source_title = title_input or uf.name.replace(".pdf", "").replace(".txt", "")
+                file_bytes = st.session_state.get("uploaded_file_bytes")
+                file_name = st.session_state.get("uploaded_file_name", "")
+                if file_bytes:
+                    source_text = extract_text(file_bytes, file_name)
+                    source_title = title_input or file_name.rsplit(".", 1)[0]
                 else:
                     st.error("请先上传文件")
                     st.stop()
