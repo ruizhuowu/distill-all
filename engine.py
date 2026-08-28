@@ -319,7 +319,7 @@ def distill_with_llm(source_text: str, method: str, title: str,
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"[LLM调用失败] {str(e)}\n\n已切换为模板模式输出：\n\n" + distill(source_text, method, title)
+        raise RuntimeError(f"LLM调用失败: {str(e)}")
 
 
 def _build_llm_prompt(text: str, method: str, method_name: str, title: str) -> str:

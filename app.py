@@ -84,6 +84,7 @@ defaults = {
     "model_type": "text",  # math / text
     "custom_model_name": "",
     "chosen_method": "outline",  # 默认提纲式
+    "llm_error": None,
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -196,7 +197,7 @@ elif current_page == "开始蒸馏":
 
     # 检查是否有已蒸馏的结果
     if st.session_state.distill_result is not None:
-        st.success("蒸馏完成！查看结果 👇")
+        st.success("蒸馏完成！查看结果 ")
 
         # 显示蒸馏结果
         result = st.session_state.edited_result or st.session_state.distill_result
@@ -205,6 +206,11 @@ elif current_page == "开始蒸馏":
         st.markdown("### 蒸馏结果")
         st.markdown(f"**蒸馏方式：** {st.session_state.distill_method}")
         st.markdown(f"**材料标题：** {st.session_state.distill_title}")
+
+        # 如果LLM调用失败，显示警告
+        if st.session_state.get("llm_error"):
+            st.warning(f"⚠️ {st.session_state.llm_error}")
+            st.info("👇 以下为模板模式生成的结果，配置有效 API Key 后可获得更高质量的 LLM 蒸馏。")
 
         # Markdown渲染预览
         st.markdown("---")
@@ -355,12 +361,18 @@ elif current_page == "开始蒸馏":
             # 执行蒸馏
             with st.spinner("蒸馏中..."):
                 api_key = st.session_state.get("api_key", "")
+                llm_error = None
                 if api_key:
                     # LLM模式
-                    base_url = st.session_state.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
-                    model = st.session_state.get("model_name", "qwen-plus")
-                    result = distill_with_llm(source_text, chosen_method, source_title,
-                                              api_key, base_url, model)
+                    try:
+                        base_url = st.session_state.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+                        model = st.session_state.get("model_name", "qwen-plus")
+                        result = distill_with_llm(source_text, chosen_method, source_title,
+                                                  api_key, base_url, model)
+                    except RuntimeError as e:
+                        llm_error = str(e)
+                        st.warning(f"⚠️ {llm_error}，已自动切换为模板模式")
+                        result = distill(source_text, chosen_method, source_title)
                 else:
                     # 模板模式
                     result = distill(source_text, chosen_method, source_title)
@@ -369,6 +381,7 @@ elif current_page == "开始蒸馏":
             st.session_state.distill_method = METHODS[chosen_method]["name"]
             st.session_state.distill_title = source_title
             st.session_state.edited_result = None
+            st.session_state.llm_error = llm_error
             st.rerun()
 
 
