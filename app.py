@@ -83,6 +83,7 @@ defaults = {
     "model_name": "qwen-plus",
     "model_type": "text",  # math / text
     "custom_model_name": "",
+    "chosen_method": "outline",  # 默认提纲式
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -291,33 +292,31 @@ elif current_page == "开始蒸馏":
         st.markdown("---")
         st.markdown("### 第二步：选择蒸馏方式")
 
-        # 蒸馏方式选择（带说明）
+        # 用卡片式布局展示蒸馏方式，点击卡片选中
+        method_keys_list = list(METHODS.keys())
         method_cols = st.columns(3)
-        method_keys = list(METHODS.keys())
-        for i, key in enumerate(method_keys):
+        for i, key in enumerate(method_keys_list):
             info = METHODS[key]
             with method_cols[i % 3]:
-                selected = st.radio(
-                    "蒸馏方式",
-                    [key],
-                    format_func=lambda x: f"{info['icon']} {info['name']}",
-                    horizontal=True,
-                    label_visibility="visible",
-                    help=info["desc"],
+                is_chosen = (st.session_state.get("chosen_method") == key)
+                border_color = "#4CAF50" if is_chosen else "#e0e0e0"
+                bg_color = "#f0fff0" if is_chosen else "white"
+                st.markdown(
+                    f"""<div style="padding:1rem; border:2px solid {border_color}; border-radius:8px;
+                        background:{bg_color}; text-align:center; cursor:pointer; min-height:80px;"
+                        onclick="void(0)">
+                        <div style="font-size:1.5rem;">{info['icon']}</div>
+                        <div style="font-weight:bold; margin:0.3rem 0;">{info['name']}</div>
+                        <div style="font-size:0.85rem; color:#666;">{info['desc']}</div>
+                        </div>""",
+                    unsafe_allow_html=True,
                 )
+                if st.button(f"选择 {info['name']}", key=f"select_{key}", use_container_width=True,
+                             type="primary" if is_chosen else "secondary"):
+                    st.session_state["chosen_method"] = key
+                    st.rerun()
 
-        # 用单独的radio做单选
-        st.markdown("")
-        method_labels = {k: f"{v['icon']} {v['name']} — {v['desc']}" for k, v in METHODS.items()}
-        chosen_method = st.radio(
-            "选择蒸馏方式",
-            list(METHODS.keys()),
-            format_func=lambda k: method_labels[k],
-            horizontal=False,
-            label_visibility="collapsed",
-            index=0,
-        )
-        st.session_state["chosen_method"] = chosen_method
+        chosen_method = st.session_state.get("chosen_method", method_keys_list[0])
 
         st.markdown("---")
         st.markdown("### 第三步：开始蒸馏")
