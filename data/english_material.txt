@@ -1,0 +1,152 @@
+# 大学英语 - 期末复习重点与考点总结
+
+## 一、考试题型与分值分布
+
+| 题型 | 分值 | 说明 |
+|------|------|------|
+| **Writing（写作）** | 15% | 三段式作文，160-180词 |
+| **Listening Comprehension（听力）** | 35% | 对话+短文理解 |
+| **Reading Comprehension（阅读）** | 30% | 细节理解+推理判断 |
+| **Vocabulary（词汇）** | 10% | 选择题/完形填空 |
+| **Translation（翻译）** | 10% | 中英互译 |
+
+---
+
+## 二、写作框架（★★★）
+
+### 结构要求
+- 必须分为**三段式**
+- 字数控制在 **160-180词**
+
+### 关联词（需用5-7个）
+| 首先类 | 其次类 | 此外类 | 总结类 |
+|--------|--------|--------|--------|
+| Firstly | Secondly | In addition | In conclusion |
+| To begin with | Furthermore | Moreover | To sum up |
+| First of all | Besides | What's more | All in all |
+
+### 句式要求
+- 需包含 **5-7个从句**：
+  - 定语从句（who/which/that）
+  - 状语从句（if/when/because/although）
+  - 名词性从句（what/that/how）
+
+### 作文模板示例
+
+**第一段（引入）**：
+Nowadays, ... has become a hot topic among people. Some people believe that ..., while others argue that ...
+
+**第二段（论证）**：
+On the one hand, ... For example, ... On the other hand, ... For instance, ...
+
+**第三段（总结）**：
+In my opinion, / From my point of view, ... Therefore, we should ...
+
+---
+
+## 三、各单元重点翻译句型
+
+### 第一单元：交流体验、人际关系
+- 与以英语为母语的人交谈是非常有益的体验... (*reap a lot from...*)
+- 在市长的帮助下，我们最终获准接触... (*with one's help; have access to...*)
+- 鲍勃和弗兰克一直不和... (*get along well with...*)
+- 做科学研究不容易... (*discipline and commitment*)
+
+### 第二单元：音乐、代沟、家庭矛盾
+- 芬奇先生冲进她的房间... (*burst into; shout at; turn down*)
+- 代沟美国有，中国也有。 (*Generation gaps exist... as well as...*)
+
+### 第三单元：适应环境、承诺、商务
+- 既然你计划移居加拿大... (*Now that...; adjust to...*)
+- 他承诺帮助我们买下那栋房子，但有点勉强。 (*with reluctance*)
+- 请务必不要迟到。 (*see to it that...*)
+- 她力劝我接受那个新职位... (*urge sb. to do...*)
+
+### 第四单元：肢体语言、第一印象（阅读重点★★）
+- 人们往往用眼神、面部表情...表露真情。 (*Consciously or unconsciously; range from... to...*)
+- 把注意力集中在最初的七秒钟。 (*Focus on...; encounter*)
+- 听众总是相信亲眼所见胜于耳闻。 (*believe A over B*)
+- 如果你想过要给人留下好印象... (*consistently; at your best*)
+
+### 第五单元：医疗/社会问题
+- 不管花多少钱...延长...生命。 (*regardless of the cost; infect with...*)
+- 这家公司过了很长时间才实施...计划。 (*implement*)
+
+### 第九单元：未来趋势
+- 是我们自己的所为和所不为决定着我们的未来。 (*It is... that... 强调句*)
+
+---
+
+## 四、语法重点考点
+
+### 1. 时态与语态 ★★★
+| 时态 | 标志词/用法 |
+|------|-------------|
+| 将来完成时 | will have done (by + 时间) |
+| 过去进行时 | was/were doing (过去某时刻正在进行) |
+| 被动语态 | be + done (注意时态一致性) |
+
+### 2. 情态动词 ★★
+| 情态动词 | 用法 |
+|---------|------|
+| must | 表推测（肯定句）"一定" |
+| might/could | 表推测"可能" |
+| should/ought to | 表建议"应该" |
+| ought to have done | 本应该做但没做 |
+| shouldn't have done | 本不该做但做了 |
+| needn't have done | 本不必做但做了 |
+
+### 3. 非谓语动词 ★★★
+| 形式 | 用法 |
+|------|------|
+| doing (现在分词) | 表主动、进行 |
+| done (过去分词) | 表被动、完成 |
+| to do (不定式) | 表目的、将来 |
+
+**with复合结构**：
+- with + 宾语 + doing (主动)
+- with + 宾语 + done (被动)
+- with + 宾语 + to do (将来)
+
+例：*With the audience seated*, the speech began.
+
+### 4. 主谓一致 ★★
+| 主语 | 谓语 |
+|------|------|
+| The number of... | 单数 (...的数量是) |
+| A number of... | 复数 (许多...) |
+| Bread and butter | 单数 (作为一个整体) |
+| Neither of us | 单数 |
+| Every man and woman | 单数 |
+
+---
+
+## 五、近义词辨析
+
+| 词组 | 区别 |
+|------|------|
+| hit vs strike | hit打中；strike敲击/打击 |
+| great vs wonderful | great伟大的；wonderful精彩的 |
+| ready vs willing | ready准备好的；willing愿意的 |
+| announce vs speak | announce正式宣布；speak说话 |
+| increase vs rise | increase增加(及物)；rise上升(不及物) |
+| meanwhile vs in the meantime |与此同时 |
+
+---
+
+## 六、阅读理解技巧
+
+### 定位法（★★★）
+1. 先看题干，圈出关键词（人名、地名、数字、专有名词）
+2. 回原文定位关键词所在的句子
+3. 仔细阅读该句及前后句
+4. 对照选项，找出同义替换的答案
+
+### 常见干扰项特征
+- 以偏概全（只说对了一部分）
+- 无中生有（原文没提）
+- 偷换概念（看似相关实则不同）
+- 绝对化表述（always, never, must）
+
+---
+*来源整理自人人文库《大学英语期末复习各单元重点》*
