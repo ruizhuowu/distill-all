@@ -965,10 +965,12 @@ elif current_page == "资料库":
 
 
 # ============================================================
-# 社区（新增）
+# 社区（含发帖功能 + 动态数据）
 # ============================================================
 
 elif current_page == "社区":
+    import random
+
     st.markdown(
         "<div style='margin-bottom:1.5rem;'>"
         "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
@@ -977,6 +979,66 @@ elif current_page == "社区":
         "</div>",
         unsafe_allow_html=True,
     )
+
+    # ========== 发帖功能 ==========
+    with st.expander("✍️ 发布新帖子", expanded=False):
+        with st.form("new_post_form"):
+            pcol1, pcol2 = st.columns([2, 1])
+            with pcol1:
+                post_title = st.text_input("帖子标题 *", placeholder="例如：马原期末复习怎么安排？")
+            with pcol2:
+                post_type = st.selectbox("帖子类型 *", [
+                    ("💬 讨论", "discussion"),
+                    ("❓ 求助", "help"),
+                    ("💡 经验分享", "experience"),
+                    ("⚠️ 避坑提醒", "pitfall"),
+                    ("📝 分享资料", "share"),
+                    ("❓ 提问", "question"),
+                ], format_func=lambda x: x[0])
+
+            course_options = ["不关联课程"] + [f"{c['code']} {c['name']}" for c in mock_data.COURSES]
+            post_course = st.selectbox("关联课程（选填）", course_options)
+
+            post_content = st.text_area(
+                "帖子内容 *",
+                placeholder="详细描述你的问题或想分享的内容...",
+                height=120,
+            )
+
+            post_tags = st.text_input("标签（用空格分隔）", placeholder="例如：马原 期末 复习")
+
+            submitted = st.form_submit_button("📤 发布帖子", use_container_width=True, type="primary")
+
+            if submitted and post_title.strip() and post_content.strip():
+                if "user_posts" not in st.session_state:
+                    st.session_state.user_posts = []
+
+                new_post = {
+                    "id": f"user_{len(st.session_state.user_posts)+1}",
+                    "title": post_title.strip(),
+                    "author": "我（当前用户）",
+                    "avatar": "我",
+                    "course_id": post_course.split()[0] if post_course != "不关联课程" else None,
+                    "course_name": post_course.split(" ", 1)[1] if post_course != "不关联课程" else "",
+                    "type": post_type[1],
+                    "type_label": post_type[0],
+                    "content": post_content.strip(),
+                    "replies": 0,
+                    "likes": 0,
+                    "views": random.randint(5, 20),
+                    "created_at": "刚刚",
+                    "is_hot": False,
+                    "is_solved": False,
+                    "tags": post_tags.split() if post_tags else [],
+                    "best_answer": None,
+                }
+                st.session_state.user_posts.insert(0, new_post)
+                st.success("✅ 帖子发布成功！")
+                st.rerun()
+            elif submitted:
+                st.warning("请填写标题和内容后再发布")
+
+    st.markdown("---")
 
     # 左右布局：帖子列表 + 排行榜
     post_col, rank_col = st.columns([3, 1])
@@ -988,47 +1050,76 @@ elif current_page == "社区":
             ["全部帖子", "🔥 热门讨论", "❓ 求助问答", "💡 经验分享", "⚠️ 避坑提醒"],
         )
 
+        # 合并预设帖子和用户帖子
+        all_posts = list(mock_data.POSTS)
+        if "user_posts" in st.session_state:
+            all_posts = st.session_state.user_posts + all_posts
+
         # 根据筛选显示帖子
         if post_filter == "🔥 热门讨论":
-            posts = [p for p in mock_data.POSTS if p.get("is_hot")]
+            posts = [p for p in all_posts if p.get("is_hot")]
         elif post_filter == "❓ 求助问答":
-            posts = [p for p in mock_data.POSTS if p["type"] in ["help", "question"]]
+            posts = [p for p in all_posts if p["type"] in ["help", "question"]]
         elif post_filter == "💡 经验分享":
-            posts = [p for p in mock_data.POSTS if p["type"] in ["experience", "share"]]
+            posts = [p for p in all_posts if p["type"] in ["experience", "share"]]
         elif post_filter == "⚠️ 避坑提醒":
-            posts = [p for p in mock_data.POSTS if p["type"] == "pitfall"]
+            posts = [p for p in all_posts if p["type"] == "pitfall"]
         else:
-            posts = mock_data.POSTS
+            posts = all_posts
 
-        # 显示帖子
+        # 显示帖子（带动态数据 + 实时提示）
         for post in posts:
             hot_tag = "🔥" if post.get("is_hot") else ""
             solved_tag = "✅ 已解决" if post.get("is_solved") else ""
+            is_user_post = post["id"].startswith("user_")
+
+            # 动态化数据：基础值 + 随机波动（模拟实时更新）
+            dynamic_likes = post["likes"] + random.randint(0, max(1, post["likes"]//10))
+            dynamic_views = post["views"] + random.randint(0, max(5, post["views"]//5))
+
+            border_color = "#51cf66" if is_user_post else "#667eea"
 
             st.markdown(
-                f"<div class='post-card'>"
+                f"<div class='post-card' style='border-left-color:{border_color};'>"
                 f"<div style='display:flex;align-items:center;margin-bottom:0.5rem;'>"
                 f"<div class='avatar' style='background:linear-gradient(135deg,#667eea,{['#764ba2','#51cf66','#ff6b6b','#ffd43b','#74c0fc'][hash(post['author'])%5]});'>"
                 f"{post['avatar']}</div>"
                 f"<div><span style='font-weight:600;color:#1a1a2e;'>{post['author']}</span>"
                 f"<span style='color:#888;font-size:0.8rem;margin-left:0.5rem;'>{post['created_at']}</span></div>"
-                f"<div style='margin-left:auto;display:flex;gap:0.4rem;'>"
-                f"<span style='font-size:0.8rem;'>{hot_tag}{solved_tag}</span></div></div>"
+                f"<div style='margin-left:auto;display:flex;gap:0.4rem;align-items:center;'>"
+                f"<span style='font-size:0.8rem;'>{hot_tag}{solved_tag}</span>"
+                f"{'<span style=\"background:#51cf66;color:white;padding:0.15rem 0.5rem;border-radius:10px;font-size:0.7rem;\">我的帖子</span>' if is_user_post else ''}"
+                f"</div></div>"
                 f"<div style='font-weight:700;color:#1a1a2e;font-size:1.05rem;margin-bottom:0.4rem;'>{post['title']}</div>"
-                f"<div style='color:#555;font-size:0.9rem;line-height:1.6;margin-bottom:0.6rem;'>{post['content'][:200]}{'...' if len(post['content'])>200 else ''}</div>"
-                f"<div style='display:flex;gap:1rem;color:#888;font-size:0.82rem;'>"
+                f"<div style='color:#555;font-size:0.9rem;line-height:1.6;margin-bottom:0.6rem;'>{post['content'][:250]}{'...' if len(post['content'])>250 else ''}</div>"
+                f"<div style='display:flex;gap:1rem;color:#888;font-size:0.82rem;flex-wrap:wrap;'>"
                 f"<span>{post['type_label']}</span>"
                 f"<span>💬 {post['replies']}回复</span>"
-                f"<span>❤️ {post['likes']}</span>"
-                f"<span>👁️ {post['views']}浏览</span></div>"
+                f"<span>❤️ {dynamic_likes}</span>"
+                f"<span>👁️ {dynamic_views}浏览</span></div>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
 
-            # 最佳答案（如果有）
+            # 最佳答案
             if post.get("best_answer"):
                 with st.expander("查看最佳答案 👇", expanded=False):
                     st.info(post["best_answer"])
+
+            # 互动按钮
+            btn_col1, btn_col2, btn_col3 = st.columns(3)
+            with btn_col1:
+                st.button(f"👍 点赞 ({dynamic_likes})", key=f"like_{post['id']}")
+            with btn_col2:
+                st.button(f"💬 回复 ({post['replies']})", key=f"reply_{post['id']}")
+            with btn_col3:
+                if is_user_post and not post.get("is_solved"):
+                    if st.button(f"✅ 标记已解决", key=f"solve_{post['id']}"):
+                        for up in st.session_state.user_posts:
+                            if up["id"] == post["id"]:
+                                up["is_solved"] = True
+                                break
+                        st.rerun()
 
             st.markdown("")
 
@@ -1036,13 +1127,18 @@ elif current_page == "社区":
         # 排行榜
         st.markdown(
             "<div style='background:white;border-radius:12px;padding:1rem;border:1px solid #eef0f6;'>"
-            "<div style='font-weight:700;color:#1a1a2e;margin-bottom:1rem;text-align:center;'>🏆 贡献榜</div>",
+            "<div style='font-weight:700;color:#1a1a2e;margin-bottom:1rem;text-align:center;'>🏆 贡献榜</div>"
+            "<div style='text-align:center;color:#888;font-size:0.75rem;margin-bottom:0.8rem;'>实时更新中...</div>",
             unsafe_allow_html=True,
         )
 
         for item in mock_data.LEADERBOARD:
             rank_class = "rank-1" if item["rank"]==1 else ("rank-2" if item["rank"]==2 else ("rank-3" if item["rank"]==3 else "rank-other"))
             colors = ["#FFD700", "#C0C0C0", "#CD7F32", "#667eea", "#764ba2", "#51cf66", "#ff6b6b", "#ffd43b"]
+
+            # 动态分数
+            dynamic_points = item["points"] + random.randint(-5, 15)
+
             st.markdown(
                 f"<div class='rank-item {rank_class}'>"
                 f"<div class='rank-num'>{item['rank']}</div>"
@@ -1050,7 +1146,7 @@ elif current_page == "社区":
                 f"{item['avatar']}</div>"
                 f"<div style='flex:1;'>"
                 f"<div style='font-weight:600;font-size:0.85rem;color:#1a1a2e;'>{item['name']}</div>"
-                f"<div style='color:#888;font-size:0.75rem;'>{item['points']}分 · {item['contributions']}贡献</div>"
+                f"<div style='color:#888;font-size:0.75rem;'>{dynamic_points}分 · {item['contributions']}贡献</div>"
                 f"</div></div>",
                 unsafe_allow_html=True,
             )
