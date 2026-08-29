@@ -1267,12 +1267,98 @@ elif current_page == "社区":
                 with st.expander("查看最佳答案 👇", expanded=False):
                     st.info(post["best_answer"])
 
+            # ========== 回复功能 ==========
+            # 预设模拟回复（根据帖子类型生成不同风格的回复）
+            mock_replies_map = {
+                "post_001": [
+                    {"author": "国贸2301_陈志远", "avatar": "陈", "content": "张教授确实偏爱辩证法！去年我考了92分，大题就是对立统一规律，建议把三个基本范畴（现象本质、原因结果、必然偶然）也背一下！", "time": "2小时前", "likes": 23},
+                    {"author": "金融2201_张雨欣", "avatar": "张", "content": "补充：认识论那块也要注意，'实践是检验真理的唯一标准'几乎每年都考选择题。建议用思维导图把整本书串起来。", "time": "1小时前", "likes": 15},
+                    {"author": "工管2401_李思涵", "avatar": "李", "content": "请问有人有张教授的PPT吗？想对照着复习🙏", "time": "30分钟前", "likes": 3},
+                ],
+                "post_002": [
+                    {"author": "会计2301_郑凯文", "avatar": "郑", "content": "口诀分享：资成费借增贷减，负所收贷增借减！记住这个就不会混了。", "time": "45分钟前", "likes": 56},
+                    {"author": "会计2202_孙悦琳", "avatar": "孙", "content": "预收账款确实是负债！因为你收了钱但还没提供服务/商品，相当于欠别人的。预付账款才是资产。", "time": "30分钟前", "likes": 28},
+                ],
+                "post_003": [
+                    {"author": "计科2401_赵雅婷", "avatar": "赵", "content": "太强了！我也期中考砸了，按这个方法试试！请问刷真题用哪本比较好？", "time": "1小时前", "likes": 12},
+                    {"author": "统数2202_刘浩然", "avatar": "刘", "content": "推荐《高等数学同济版习题全解》，淘宝就有。重点是做错题本！每道错题都要写清楚为什么错、正确思路是什么。", "time": "50分钟前", "likes": 34},
+                ],
+            }
+
+            # 获取该帖子的回复
+            post_replies = mock_replies_map.get(post["id"], [
+                {"author": "法学2301_林小夏", "avatar": "夏", "content": "说得很详细，学习了！感谢分享 👍", "time": "1小时前", "likes": 8},
+                {"author": "外语2301_黄诗琪", "avatar": "黄", "content": "同感！我之前也遇到过这个问题", "time": "45分钟前", "likes": 5},
+            ])
+
+            # 用户添加的回复
+            user_replies_key = f"replies_{post['id']}"
+            if user_replies_key not in st.session_state:
+                st.session_state[user_replies_key] = []
+
+            all_replies = post_replies + st.session_state[user_replies_key]
+
+            with st.expander(f"💬 查看全部回复 ({len(all_replies)})", expanded=False):
+                # 显示所有回复
+                for idx, reply in enumerate(all_replies):
+                    is_user_reply = idx >= len(post_replies)
+                    border_color = "#51cf66" if is_user_reply else "#eef0f6"
+
+                    st.markdown(
+                        f"<div style='background:{border_color};border-radius:10px;"
+                        f"padding:0.8rem 1rem;margin-bottom:0.6rem;'>"
+                        f"<div style='display:flex;align-items:center;margin-bottom:0.4rem;'>"
+                        f"<div class='avatar' style='background:linear-gradient(135deg,#74c0fc,{['#667eea','#51cf66','#ff6b6b','#ffd43b'][idx%4]});"
+                        f"width:28px;height:28px;font-size:0.75rem;'>{reply['avatar']}</div>"
+                        f"<span style='font-weight:600;color:#1a1a2e;font-size:0.9rem;'>{reply['author']}</span>"
+                        f"{'<span style=\"background:#51cf66;color:white;padding:0.1rem 0.4rem;border-radius:8px;font-size:0.7rem;margin-left:0.5rem;\">我的回复</span>' if is_user_reply else ''}"
+                        f"<span style='color:#888;font-size:0.8rem;margin-left:auto;'>{reply['time']}</span></div>"
+                        f"<div style='color:#444;font-size:0.9rem;line-height:1.5;'>{reply['content']}</div>"
+                        f"<div style='margin-top:0.4rem;'>"
+                        f"<span style='color:#888;font-size:0.8rem;cursor:pointer;'>❤️ {reply['likes']} 赞</span>"
+                        f"</div></div>",
+                        unsafe_allow_html=True,
+                    )
+
+                # 回复输入框
+                st.markdown("---")
+                with st.form(f"reply_form_{post['id']}"):
+                    my_reply = st.text_area(
+                        "写下你的回复...",
+                        height=80,
+                        key=f"reply_input_{post['id']}"
+                    )
+                    reply_col1, reply_col2 = st.columns([3, 1])
+                    with reply_col2:
+                        reply_submitted = st.form_submit_button("发送回复", type="primary")
+
+                    if reply_submitted and my_reply.strip():
+                        new_reply = {
+                            "author": "我",
+                            "avatar": "我",
+                            "content": my_reply.strip(),
+                            "time": "刚刚",
+                            "likes": 0,
+                        }
+                        st.session_state[user_replies_key].append(new_reply)
+                        # 更新帖子回复数
+                        if is_user_post and "user_posts" in st.session_state:
+                            for up in st.session_state.user_posts:
+                                if up["id"] == post["id"]:
+                                    up["replies"] += 1
+                                    break
+                        st.success("✅ 回复成功！")
+                        st.rerun()
+                    elif reply_submitted:
+                        st.warning("请输入回复内容")
+
             # 互动按钮
             btn_col1, btn_col2, btn_col3 = st.columns(3)
             with btn_col1:
                 st.button(f"👍 点赞 ({dynamic_likes})", key=f"like_{post['id']}")
             with btn_col2:
-                st.button(f"💬 回复 ({post['replies']})", key=f"reply_{post['id']}")
+                # 回复按钮现在只是展开提示
+                st.button(f"💬 回复 ({len(all_replies)})", key=f"reply_btn_{post['id']}")
             with btn_col3:
                 if is_user_post and not post.get("is_solved"):
                     if st.button(f"✅ 标记已解决", key=f"solve_{post['id']}"):
