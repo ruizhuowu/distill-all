@@ -14,7 +14,7 @@ import sys
 # 确保能导入同目录模块
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from engine import (
-    extract_text, distill, distill_with_llm, METHODS,
+    extract_text, distill, distill_with_llm, distill_custom, METHODS,
     split_into_sections, extract_key_sentences
 )
 from knowledge_base import get_courses, render_course, render_chapter
@@ -391,6 +391,9 @@ if current_page == "首页":
                 f"<div class='icon'>{info['icon']}</div>"
                 f"<div class='name'>{info['name']}</div>"
                 f"<div class='desc'>{info['desc']}</div>"
+                f"<div style='display:inline-block; margin-top:0.5rem; padding:0.15rem 0.7rem; "
+                f"border-radius:20px; background:#667eea15; color:#667eea; "
+                f"font-size:0.75rem; font-weight:600;'>🎯 {info['phase']}</div>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
@@ -542,7 +545,18 @@ elif current_page == "开始蒸馏":
                 st.info(f"已选择 {len(selected_chapters)} 个章节的知识骨架内容")
 
         st.markdown("---")
-        st.markdown("### 第二步：选择蒸馏方式")
+        st.markdown("### 第二步：选择蒸馏方式（或直接提要求）")
+
+        # 核心逻辑提示条：让用户 get 到"骨架 + 结晶"
+        st.markdown(
+            "<div style='background:#f6f7ff; border:1px solid #667eea33; border-radius:10px; "
+            "padding:0.7rem 1rem; margin-bottom:1rem; color:#4a4a7a; font-size:0.9rem;'>"
+            "💡 <b>核心逻辑</b>：无论选哪种方式，材料都会先被拆成"
+            "<b>知识骨架</b>（概念/公式/方法/易错点 + 考点强度 ★★★），"
+            "你选的只是这份骨架的<b>呈现方式</b>。先想清楚：你现在想干嘛？"
+            "</div>",
+            unsafe_allow_html=True,
+        )
 
         # 用卡片式布局展示蒸馏方式，点击卡片选中
         method_keys_list = list(METHODS.keys())
@@ -555,11 +569,14 @@ elif current_page == "开始蒸馏":
                 bg_color = "#f0f0ff" if is_chosen else "white"
                 st.markdown(
                     f"""<div style="padding:1rem; border:2px solid {border_color}; border-radius:8px;
-                        background:{bg_color}; text-align:center; cursor:pointer; min-height:80px;"
+                        background:{bg_color}; text-align:center; cursor:pointer; min-height:110px;"
                         onclick="void(0)">
                         <div style="font-size:1.5rem;">{info['icon']}</div>
                         <div style="font-weight:bold; margin:0.3rem 0;">{info['name']}</div>
                         <div style="font-size:0.85rem; color:#666;">{info['desc']}</div>
+                        <div style="display:inline-block; margin-top:0.4rem; padding:0.1rem 0.6rem;
+                            border-radius:20px; background:#667eea15; color:#667eea;
+                            font-size:0.72rem; font-weight:600;">🎯 {info['phase']}</div>
                         </div>""",
                     unsafe_allow_html=True,
                 )
@@ -568,7 +585,36 @@ elif current_page == "开始蒸馏":
                     st.session_state["chosen_method"] = key
                     st.rerun()
 
+        # 自定义要求入口
+        is_custom = st.session_state.get("chosen_method") == "custom"
+        if st.button("✍️ 我想自定义要求（用自然语言告诉 AI 你的复习目标）",
+                     use_container_width=True,
+                     type="primary" if is_custom else "secondary",
+                     key="btn_custom_method"):
+            st.session_state["chosen_method"] = "custom"
+            st.rerun()
+
         chosen_method = st.session_state.get("chosen_method", method_keys_list[0])
+        if chosen_method == "custom":
+            st.markdown(
+                "<div style='margin-top:0.8rem; padding:1rem; border:1.5px dashed #667eea66; "
+                "border-radius:10px; background:#fafbff;'>"
+                "<div style='font-weight:700; color:#1a1a2e; margin-bottom:0.4rem;'>🎯 描述你的要求</div>"
+                "<div style='color:#8892b0; font-size:0.85rem; margin-bottom:0.6rem;'>"
+                "例如：只看第一章和第三章，去掉公式，重点讲物质观相关的概念</div>",
+                unsafe_allow_html=True,
+            )
+            custom_requirement = st.text_area(
+                "你的复习要求",
+                value=st.session_state.get("custom_requirement", ""),
+                placeholder="比如：只要概念和易错点；重点展开第2章；把每一条都给出考法；我不要思维导图，要文字版...",
+                height=100,
+                key="custom_req_input",
+            )
+            st.session_state["custom_requirement"] = custom_requirement
+            st.markdown("</div>", unsafe_allow_html=True)
+            if not st.session_state.get("api_key"):
+                st.caption("💡 提示：未配置 API Key 时只能识别「章节 / 类型 / 重点词」类简单要求；配置后可完整理解。")
 
         st.markdown("---")
         st.markdown("### 第三步：开始蒸馏")
@@ -608,11 +654,30 @@ elif current_page == "开始蒸馏":
             with st.spinner("蒸馏中..."):
                 api_key = st.session_state.get("api_key", "")
                 llm_error = None
-                if api_key:
+                method_display = METHODS.get(chosen_method, {}).get("name", "自定义要求")
+                base_url = st.session_state.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+                model = st.session_state.get("model_name", "qwen-plus")
+
+                if chosen_method == "custom":
+                    # 自定义要求模式（用户自然语言 → 柔性蒸馏）
+                    custom_req = st.session_state.get("custom_requirement", "").strip()
+                    if not custom_req:
+                        st.error("请先描述你的自定义要求，再开始蒸馏")
+                        st.stop()
+                    method_display = "✍️ 自定义要求"
+                    if api_key:
+                        try:
+                            result = distill_with_llm(source_text, "outline", source_title,
+                                                      api_key, base_url, model, requirement=custom_req)
+                        except RuntimeError as e:
+                            llm_error = str(e)
+                            st.warning(f"⚠️ {llm_error}，已自动切换为模板模式")
+                            result = distill_custom(source_text, custom_req, source_title)
+                    else:
+                        result = distill_custom(source_text, custom_req, source_title)
+                elif api_key:
                     # LLM模式
                     try:
-                        base_url = st.session_state.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
-                        model = st.session_state.get("model_name", "qwen-plus")
                         result = distill_with_llm(source_text, chosen_method, source_title,
                                                   api_key, base_url, model)
                     except RuntimeError as e:
@@ -624,7 +689,7 @@ elif current_page == "开始蒸馏":
                     result = distill(source_text, chosen_method, source_title)
 
             st.session_state.distill_result = result
-            st.session_state.distill_method = METHODS[chosen_method]["name"]
+            st.session_state.distill_method = method_display
             st.session_state.distill_title = source_title
             st.session_state.edited_result = None
             st.session_state.llm_error = llm_error
