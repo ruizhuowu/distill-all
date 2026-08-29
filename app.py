@@ -1,6 +1,6 @@
 """
-一切皆蒸馏 - 主应用
-面向大学生的知识蒸馏备考平台
+一切皆蒸馏 - 主应用（湖经考霸版）
+面向大学生的知识蒸馏备考平台 + 社区功能
 """
 
 import streamlit as st
@@ -18,6 +18,7 @@ from engine import (
     split_into_sections, extract_key_sentences
 )
 from knowledge_base import get_courses, render_course, render_chapter
+import mock_data
 
 # ============================================================
 # 页面配置
@@ -218,6 +219,69 @@ st.markdown("""
     .stAlert { margin-top: 0.5rem; border-radius: 10px !important; }
     div[data-testid="stSidebar"] { min-width: 240px; }
     hr { border-color: #eef0f6 !important; }
+
+    /* ========== 资料卡片 ========== */
+    .resource-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.2rem;
+        border: 1px solid #eef0f6;
+        transition: all 0.2s ease;
+    }
+    .resource-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+    }
+
+    /* ========== 帖子卡片 ========== */
+    .post-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.2rem;
+        border-left: 4px solid #667eea;
+        margin-bottom: 1rem;
+    }
+
+    /* ========== 排行榜 ========== */
+    .rank-item {
+        display: flex;
+        align-items: center;
+        padding: 0.6rem 0.8rem;
+        border-radius: 10px;
+        margin-bottom: 0.4rem;
+        background: white;
+        border: 1px solid #eef0f6;
+    }
+    .rank-item:hover {
+        background: #f8f9ff;
+    }
+    .rank-num {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-right: 0.8rem;
+    }
+    .rank-1 .rank-num { background: linear-gradient(135deg, #FFD700, #FFA500); color: white; }
+    .rank-2 .rank-num { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; }
+    .rank-3 .rank-num { background: linear-gradient(135deg, #CD7F32, #B8860B); color: white; }
+    .rank-other .rank-num { background: #eef0f6; color: #888; }
+
+    /* ========== 头像 ========== */
+    .avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: white;
+        margin-right: 0.6rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -265,9 +329,9 @@ with st.sidebar:
     )
     st.markdown("---")
 
-    # 导航
-    page_labels = ["🏠 首页", "🧪 开始蒸馏", "📚 知识骨架", "⚙️ 模型设置", "💬 反馈"]
-    page_keys = ["首页", "开始蒸馏", "知识骨架", "模型设置", "反馈"]
+    # 导航（新增资料库和社区）
+    page_labels = ["🏠 首页", "🧪 开始蒸馏", "📚 知识骨架", "📁 资料库", "💬 社区", "⚙️ 模型设置", "💬 反馈"]
+    page_keys = ["首页", "开始蒸馏", "知识骨架", "资料库", "社区", "模型设置", "反馈"]
     default_idx = page_keys.index(st.session_state.page) if st.session_state.page in page_keys else 0
 
     page = st.radio(
@@ -281,6 +345,8 @@ with st.sidebar:
         "🏠 首页": "首页",
         "🧪 开始蒸馏": "开始蒸馏",
         "📚 知识骨架": "知识骨架",
+        "📁 资料库": "资料库",
+        "💬 社区": "社区",
         "⚙️ 模型设置": "模型设置",
         "💬 反馈": "反馈",
     }
@@ -288,15 +354,26 @@ with st.sidebar:
     st.session_state.page = current_page
 
     st.markdown("---")
+
+    # 全站统计
+    stats = mock_data.SITE_STATS
+    st.markdown(
+        f"<div style='text-align:center; padding:0.5rem 0; color:#c8d0e8; font-size:0.78rem;'>"
+        f"📊 {stats['total_students']} 位同学 · {stats['total_materials']} 份资料 · {stats['total_posts']} 条讨论"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
     st.markdown(
         "<div style='text-align:center; color:#8892b0; font-size:0.75rem; padding: 0.5rem 0;'>"
-        "v0.2 · 一切皆蒸馏</div>",
+        "v1.0 · 一切皆蒸馏</div>",
         unsafe_allow_html=True,
     )
 
 
 # ============================================================
-# 首页（Landing Page 风格）
+# 首页（Landing Page 风格）- 增强版
 # ============================================================
 
 if current_page == "首页":
@@ -400,14 +477,53 @@ if current_page == "首页":
 
     st.markdown("---")
 
-    # 底部引导
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("📚 浏览预建知识骨架", use_container_width=True):
+    # 热门课程展示
+    st.markdown(
+        "<div style='text-align:center; margin-bottom:1.5rem;'>"
+        "<h2 style='font-weight:700; color:#1a1a2e;'>热门课程</h2>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    course_cols = st.columns(3)
+    for i, c in enumerate(mock_data.COURSES[:6]):
+        with course_cols[i % 3]:
+            tags_html = " ".join([f"<span class='tag tag-primary' style='font-size:0.72rem;padding:0.15rem 0.5rem;'>{t}</span>" for t in c["tags"][:2]])
+            st.markdown(
+                f"<div class='card' style='cursor:pointer;' onclick=\"void(0)\">"
+                f"<div style='display:flex;align-items:center;margin-bottom:0.5rem;'>"
+                f"<div style='background:linear-gradient(135deg,#667eea,#764ba2);width:40px;height:40px;"
+                f"border-radius:10px;display:flex;align-items:center;justify-content:center;"
+                f"color:white;font-weight:700;font-size:0.85rem;margin-right:0.8rem;'>{c['code'][:2]}</div>"
+                f"<div><div style='font-weight:700;font-size:0.95rem;color:#1a1a2e;'>{c['name']}</div>"
+                f"<div style='color:#888;font-size:0.8rem;'>{c['category']} · {c['department']}</div></div></div>"
+                f"<div style='display:flex;gap:0.4rem;flex-wrap:wrap;'>{tags_html}</div>"
+                f"<div style='margin-top:0.6rem;display:flex;justify-content:space-between;color:#888;font-size:0.8rem;'>"
+                f"<span>📄 {c['stats']['total_materials']}份资料</span>"
+                f"<span>⭐ {c['stats']['avg_rating']}</span>"
+                f"<span>👥 {c['stats']['active_students']}人学习</span></div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+    st.markdown("---")
+
+    # 底部快捷入口
+    quick_cols = st.columns(4)
+    with quick_cols[0]:
+        if st.button("📁 浏览资料库", use_container_width=True):
+            st.session_state.page = "资料库"
+            st.rerun()
+    with quick_cols[1]:
+        if st.button("💬 进入社区", use_container_width=True):
+            st.session_state.page = "社区"
+            st.rerun()
+    with quick_cols[2]:
+        if st.button("📚 浏览知识骨架", use_container_width=True):
             st.session_state.page = "知识骨架"
             st.rerun()
-    with col2:
-        if st.button("⚙️ 配置模型设置", use_container_width=True):
+    with quick_cols[3]:
+        if st.button("⚙️ 配置模型", use_container_width=True):
             st.session_state.page = "模型设置"
             st.rerun()
 
@@ -511,7 +627,6 @@ elif current_page == "开始蒸馏":
                 help="上传你的课件、笔记、习题集等学习材料"
             )
             if uploaded_file:
-                # 立即读取文件内容并缓存，避免文件指针耗尽
                 file_bytes = uploaded_file.read()
                 st.session_state["uploaded_file_bytes"] = file_bytes
                 st.session_state["uploaded_file_name"] = uploaded_file.name
@@ -533,7 +648,6 @@ elif current_page == "开始蒸馏":
             )
 
             if selected_chapters:
-                # 合并选中章节的内容
                 combined = []
                 for ch in course["chapters"]:
                     if ch["title"] in selected_chapters:
@@ -547,7 +661,7 @@ elif current_page == "开始蒸馏":
         st.markdown("---")
         st.markdown("### 第二步：选择蒸馏方式（或直接提要求）")
 
-        # 核心逻辑提示条：让用户 get 到"骨架 + 结晶"
+        # 核心逻辑提示条
         st.markdown(
             "<div style='background:#f6f7ff; border:1px solid #667eea33; border-radius:10px; "
             "padding:0.7rem 1rem; margin-bottom:1rem; color:#4a4a7a; font-size:0.9rem;'>"
@@ -558,7 +672,7 @@ elif current_page == "开始蒸馏":
             unsafe_allow_html=True,
         )
 
-        # 用卡片式布局展示蒸馏方式，点击卡片选中
+        # 用卡片式布局展示蒸馏方式
         method_keys_list = list(METHODS.keys())
         method_cols = st.columns(3)
         for i, key in enumerate(method_keys_list):
@@ -569,8 +683,7 @@ elif current_page == "开始蒸馏":
                 bg_color = "#f0f0ff" if is_chosen else "white"
                 st.markdown(
                     f"""<div style="padding:1rem; border:2px solid {border_color}; border-radius:8px;
-                        background:{bg_color}; text-align:center; cursor:pointer; min-height:110px;"
-                        onclick="void(0)">
+                        background:{bg_color}; text-align:center; cursor:pointer; min-height:110px;">
                         <div style="font-size:1.5rem;">{info['icon']}</div>
                         <div style="font-weight:bold; margin:0.3rem 0;">{info['name']}</div>
                         <div style="font-size:0.85rem; color:#666;">{info['desc']}</div>
@@ -585,7 +698,7 @@ elif current_page == "开始蒸馏":
                     st.session_state["chosen_method"] = key
                     st.rerun()
 
-        # 自定义要求入口（卡片式：直接展示输入框 + 确认按钮）
+        # 自定义要求入口
         is_custom = st.session_state.get("chosen_method") == "custom"
         _custom_card_style = (
             "border:2px solid #667eea;" if is_custom
@@ -631,7 +744,6 @@ elif current_page == "开始蒸馏":
         )
 
         if st.button("🧪 开始蒸馏！", use_container_width=True, type="primary"):
-            # 获取源文本
             source_text = ""
             source_title = title_input
 
@@ -664,7 +776,6 @@ elif current_page == "开始蒸馏":
                 model = st.session_state.get("model_name", "qwen-plus")
 
                 if chosen_method == "custom":
-                    # 自定义要求模式（用户自然语言 → 柔性蒸馏）
                     custom_req = st.session_state.get("custom_requirement", "").strip()
                     if not custom_req:
                         st.error("请先描述你的自定义要求，再开始蒸馏")
@@ -681,7 +792,6 @@ elif current_page == "开始蒸馏":
                     else:
                         result = distill_custom(source_text, custom_req, source_title)
                 elif api_key:
-                    # LLM模式
                     try:
                         result = distill_with_llm(source_text, chosen_method, source_title,
                                                   api_key, base_url, model)
@@ -690,7 +800,6 @@ elif current_page == "开始蒸馏":
                         st.warning(f"⚠️ {llm_error}，已自动切换为模板模式")
                         result = distill(source_text, chosen_method, source_title)
                 else:
-                    # 模板模式
                     result = distill(source_text, chosen_method, source_title)
 
             st.session_state.distill_result = result
@@ -754,10 +863,7 @@ elif current_page == "知识骨架":
     chapter = course["chapters"][ch_idx]
 
     st.markdown("")
-    st.markdown(
-        "<div class='result-card'>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div class='result-card'>", unsafe_allow_html=True)
     st.markdown(render_chapter(chapter))
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -769,6 +875,187 @@ elif current_page == "知识骨架":
         st.session_state["source_type"] = "skeleton"
         st.session_state["skeleton_title"] = course["name"]
         st.rerun()
+
+
+# ============================================================
+# 资料库（新增）
+# ============================================================
+
+elif current_page == "资料库":
+    st.markdown(
+        "<div style='margin-bottom:1.5rem;'>"
+        "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
+        "📁 资料库</h1>"
+        "<p style='color:#8892b0;'>学长学姐整理的高质量复习资料，可直接下载或用于蒸馏</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    # 课程筛选
+    course_options = ["全部课程"] + [f"{c['code']} {c['name']}" for c in mock_data.COURSES]
+    selected_filter = st.selectbox("按课程筛选", course_options)
+
+    # 获取筛选后的资料
+    if selected_filter == "全部课程":
+        resources = mock_data.RESOURCES
+    else:
+        course_code = selected_filter.split()[0]
+        resources = mock_data.get_resources_by_course(course_code)
+
+    # 统计信息
+    st.markdown(
+        f"<div style='display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;'>"
+        f"<div style='background:#f0f0ff;border-radius:10px;padding:0.8rem 1.2rem;text-align:center;'>"
+        f"<div style='font-size:1.5rem;font-weight:700;color:#667eea;'>{len(resources)}</div>"
+        f"<div style='color:#888;font-size:0.85rem;'>份资料</div></div>"
+        f"<div style='background:#fff5f0;border-radius:10px;padding:0.8rem 1.2rem;text-align:center;'>"
+        f"<div style='font-size:1.5rem;font-weight:700;color:#ff6b6b;'>{sum(r['downloads'] for r in resources)}</div>"
+        f"<div style='color:#888;font-size:0.85rem;'>次下载</div></div>"
+        f"<div style='background:#f0fff4;border-radius:10px;padding:0.8rem 1.2rem;text-align:center;'>"
+        f"<div style='font-size:1.5rem;font-weight:700;color:#51cf66;'>{sum(r['likes'] for r in resources)}</div>"
+        f"<div style='color:#888;font-size:0.85rem;'>个赞</div></div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+    # 资料列表
+    for res in resources:
+        verified_badge = "✅ 已认证" if res["is_verified"] else ""
+        tags_html = " ".join([f"<span class='tag tag-primary' style='font-size:0.75rem;padding:0.12rem 0.5rem;'>{t}</span>" for t in res["tags"][:3]])
+
+        with st.expander(f"{res['type_label']} **{res['title']}** {verified_badge}", expanded=False):
+            st.markdown(
+                f"<div style='margin-bottom:1rem;'>"
+                f"<div style='display:flex;align-items:center;margin-bottom:0.6rem;'>"
+                f"<div class='avatar' style='background:linear-gradient(135deg,#667eea,#764ba2);'>{res['avatar']}</div>"
+                f"<div><span style='font-weight:600;color:#1a1a2e;'>{res['uploader']}</span>"
+                f"<span style='color:#888;font-size:0.85rem;margin-left:0.5rem;'>{res['upload_time']}</span></div></div>"
+                f"<div style='display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.8rem;'>{tags_html}</div>"
+                f"<div style='display:flex;gap:1.5rem;color:#888;font-size:0.85rem;margin-bottom:0.8rem;'>"
+                f"<span>📥 {res['downloads']}下载</span>"
+                f"<span>❤️ {res['likes']}</span>"
+                f"<span>⭐ {res['rating']}</span></div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+            # 蒸馏预览
+            st.markdown("**📋 蒸馏预览**")
+            st.markdown(res["distilled_preview"])
+
+            # 操作按钮
+            rcol1, rcol2, rcol3 = st.columns(3)
+            with rcol1:
+                st.download_button(
+                    "📥 下载原文",
+                    data=res["distilled_preview"],
+                    file_name=f"{res['title']}.md",
+                    mime="text/markdown",
+                    use_container_width=True,
+                )
+            with rcol2:
+                if st.button(f"🧪 用此资料蒸馏", key=f"distill_{res['id']}", use_container_width=True):
+                    st.session_state.page = "开始蒸馏"
+                    st.session_state["skeleton_text"] = res["distilled_preview"]
+                    st.session_state["source_type"] = "skeleton"
+                    st.session_state["skeleton_title"] = res["title"]
+                    st.rerun()
+            with rcol3:
+                st.button("❤️ 点赞", key=f"like_{res['id']}", use_container_width=True)
+
+
+# ============================================================
+# 社区（新增）
+# ============================================================
+
+elif current_page == "社区":
+    st.markdown(
+        "<div style='margin-bottom:1.5rem;'>"
+        "<h1 style='font-weight:700; color:#1a1a2e; margin-bottom:0.3rem;'>"
+        "💬 学习社区</h1>"
+        "<p style='color:#8892b0;'>和同学交流经验、分享心得、互助答疑</p>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    # 左右布局：帖子列表 + 排行榜
+    post_col, rank_col = st.columns([3, 1])
+
+    with post_col:
+        # 帖子筛选
+        post_filter = st.selectbox(
+            "筛选帖子",
+            ["全部帖子", "🔥 热门讨论", "❓ 求助问答", "💡 经验分享", "⚠️ 避坑提醒"],
+        )
+
+        # 根据筛选显示帖子
+        if post_filter == "🔥 热门讨论":
+            posts = [p for p in mock_data.POSTS if p.get("is_hot")]
+        elif post_filter == "❓ 求助问答":
+            posts = [p for p in mock_data.POSTS if p["type"] in ["help", "question"]]
+        elif post_filter == "💡 经验分享":
+            posts = [p for p in mock_data.POSTS if p["type"] in ["experience", "share"]]
+        elif post_filter == "⚠️ 避坑提醒":
+            posts = [p for p in mock_data.POSTS if p["type"] == "pitfall"]
+        else:
+            posts = mock_data.POSTS
+
+        # 显示帖子
+        for post in posts:
+            hot_tag = "🔥" if post.get("is_hot") else ""
+            solved_tag = "✅ 已解决" if post.get("is_solved") else ""
+
+            st.markdown(
+                f"<div class='post-card'>"
+                f"<div style='display:flex;align-items:center;margin-bottom:0.5rem;'>"
+                f"<div class='avatar' style='background:linear-gradient(135deg,#667eea,{['#764ba2','#51cf66','#ff6b6b','#ffd43b','#74c0fc'][hash(post['author'])%5]});'>"
+                f"{post['avatar']}</div>"
+                f"<div><span style='font-weight:600;color:#1a1a2e;'>{post['author']}</span>"
+                f"<span style='color:#888;font-size:0.8rem;margin-left:0.5rem;'>{post['created_at']}</span></div>"
+                f"<div style='margin-left:auto;display:flex;gap:0.4rem;'>"
+                f"<span style='font-size:0.8rem;'>{hot_tag}{solved_tag}</span></div></div>"
+                f"<div style='font-weight:700;color:#1a1a2e;font-size:1.05rem;margin-bottom:0.4rem;'>{post['title']}</div>"
+                f"<div style='color:#555;font-size:0.9rem;line-height:1.6;margin-bottom:0.6rem;'>{post['content'][:200]}{'...' if len(post['content'])>200 else ''}</div>"
+                f"<div style='display:flex;gap:1rem;color:#888;font-size:0.82rem;'>"
+                f"<span>{post['type_label']}</span>"
+                f"<span>💬 {post['replies']}回复</span>"
+                f"<span>❤️ {post['likes']}</span>"
+                f"<span>👁️ {post['views']}浏览</span></div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+            # 最佳答案（如果有）
+            if post.get("best_answer"):
+                with st.expander("查看最佳答案 👇", expanded=False):
+                    st.info(post["best_answer"])
+
+            st.markdown("")
+
+    with rank_col:
+        # 排行榜
+        st.markdown(
+            "<div style='background:white;border-radius:12px;padding:1rem;border:1px solid #eef0f6;'>"
+            "<div style='font-weight:700;color:#1a1a2e;margin-bottom:1rem;text-align:center;'>🏆 贡献榜</div>",
+            unsafe_allow_html=True,
+        )
+
+        for item in mock_data.LEADERBOARD:
+            rank_class = "rank-1" if item["rank"]==1 else ("rank-2" if item["rank"]==2 else ("rank-3" if item["rank"]==3 else "rank-other"))
+            colors = ["#FFD700", "#C0C0C0", "#CD7F32", "#667eea", "#764ba2", "#51cf66", "#ff6b6b", "#ffd43b"]
+            st.markdown(
+                f"<div class='rank-item {rank_class}'>"
+                f"<div class='rank-num'>{item['rank']}</div>"
+                f"<div class='avatar' style='background:{colors[item['rank']-1]};width:30px;height:30px;font-size:0.75rem;'>"
+                f"{item['avatar']}</div>"
+                f"<div style='flex:1;'>"
+                f"<div style='font-weight:600;font-size:0.85rem;color:#1a1a2e;'>{item['name']}</div>"
+                f"<div style='color:#888;font-size:0.75rem;'>{item['points']}分 · {item['contributions']}贡献</div>"
+                f"</div></div>",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ============================================================
@@ -840,7 +1127,6 @@ elif current_page == "模型设置":
         help="你的API密钥，仅存于本地浏览器，不会上传到服务器"
     )
 
-    # 预设API服务（用 session_state 记住选择）
     preset_options = ["阿里云 DashScope（通义千问）", "DeepSeek", "SiliconFlow 硅基流动", "自定义"]
     saved_preset = st.session_state.get("api_preset", preset_options[0])
     saved_idx = preset_options.index(saved_preset) if saved_preset in preset_options else 0
@@ -868,7 +1154,6 @@ elif current_page == "模型设置":
     else:
         st.session_state.base_url = preset_urls[preset]
 
-    # 模型名称
     preset_models = {
         "阿里云 DashScope（通义千问）": ["qwen-plus", "qwen-turbo", "qwen-max", "qwen-long"],
         "DeepSeek": ["deepseek-chat", "deepseek-reasoner"],
@@ -933,7 +1218,6 @@ elif current_page == "模型设置":
 
     st.markdown("---")
 
-    # 状态显示
     if st.session_state.api_key:
         st.success(f"✅ API已配置")
         st.info(f"当前配置：{preset} / {st.session_state.model_name} / {'数学推理' if st.session_state.model_type == 'math' else '文本处理'}")
@@ -978,7 +1262,6 @@ elif current_page == "反馈":
         submitted = st.form_submit_button("📮 提交反馈", use_container_width=True, type="primary")
 
         if submitted and feedback_content.strip():
-            # 保存反馈到本地（始终执行）
             feedback_file = os.path.join(os.path.dirname(__file__), "data", "feedbacks.txt")
             os.makedirs(os.path.dirname(feedback_file), exist_ok=True)
             with open(feedback_file, "a", encoding="utf-8") as f:
@@ -988,7 +1271,6 @@ elif current_page == "反馈":
                 f.write(f"联系方式：{feedback_email or '未填写'}\n")
                 f.write(f"内容：{feedback_content}\n")
 
-            # 尝试发送邮件
             smtp_auth_code = st.session_state.get("smtp_auth_code", "")
             smtp_host = st.session_state.get("smtp_host", "smtp.qq.com")
             smtp_port = st.session_state.get("smtp_port", 465)
