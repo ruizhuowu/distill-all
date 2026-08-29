@@ -1038,6 +1038,167 @@ elif current_page == "社区":
             elif submitted:
                 st.warning("请填写标题和内容后再发布")
 
+    # ========== 资料分享功能 ==========
+    st.markdown("---")
+    st.markdown(
+        "<div style='background:linear-gradient(135deg,#fff8e1,#fff3c4);border:1px solid #ffc107;"
+        "border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem;'>"
+        "<div style='display:flex;align-items:center;margin-bottom:0.5rem;'>"
+        "<span style='font-size:1.3rem;margin-right:0.5rem;'>📤</span>"
+        "<span style='font-weight:700;color:#1a1a2e;font-size:1.05rem;'>资料共享区</span>"
+        "</div>"
+        "<div style='color:#666;font-size:0.9rem;'>分享你的复习资料、笔记或整理好的知识点，帮助更多同学！</div>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    with st.expander("📁 分享我的资料", expanded=False):
+        # ⚠️ 重要提示
+        st.markdown(
+            "<div style='background:#fff3cd;border:1px solid #ffc107;border-radius:8px;"
+            "padding:0.7rem 1rem;margin-bottom:1rem;display:flex;align-items:start;'>"
+            "<span style='font-size:1.2rem;margin-right:0.6rem;'>⚠️</span>"
+            "<div><span style='font-weight:700;color:#856404;'>发布前请注意：</span>"
+            "<span style='color:#856404;font-size:0.9rem;'>"
+            "用户分享的资料未经官方审核，可能存在错误或不准确的内容。"
+            "请在使用时仔细核对，如有疑问请查阅教材或咨询任课老师。"
+            "如发现严重错误可点击举报。</span></div></div>",
+            unsafe_allow_html=True,
+        )
+
+        with st.form("share_resource_form"):
+            rcol1, rcol2 = st.columns([2, 1])
+            with rcol1:
+                res_title = st.text_input("资料标题 *", placeholder="例如：马原第三章思维导图")
+            with rcol2:
+                res_course = st.selectbox("所属课程 *", [f"{c['code']} {c['name']}" for c in mock_data.COURSES])
+
+            res_type = st.selectbox("资料类型", [
+                ("📝 笔记/总结", "notes"),
+                ("🗺️ 思维导图", "mindmap"),
+                ("📋 答题模板", "template"),
+                ("⚠️ 易错点整理", "pitfalls"),
+                ("📊 公式/考点速查", "cheatsheet"),
+                ("📝 其他", "other"),
+            ], format_func=lambda x: x[0])
+
+            res_desc = st.text_area(
+                "资料简介 *",
+                placeholder="简要描述这份资料的内容和适用场景...",
+                height=80,
+            )
+
+            # 资料内容输入
+            content_method = st.radio("输入方式", ["直接粘贴文本内容", "上传文件"], horizontal=True)
+
+            if content_method == "直接粘贴文本内容":
+                res_content = st.text_area(
+                    "资料内容 *",
+                    placeholder="在这里粘贴你的笔记、总结或知识点...",
+                    height=200,
+                )
+            else:
+                uploaded_res_file = st.file_uploader(
+                    "上传文件（支持 TXT、MD）",
+                    type=["txt", "md"],
+                    help="上传后会自动提取文本内容"
+                )
+                if uploaded_res_file:
+                    res_content = uploaded_res_file.read().decode("utf-8")
+                    st.success(f"已读取：{uploaded_res_file.name}（{len(res_content)}字）")
+                else:
+                    res_content = ""
+
+            res_tags = st.text_input("标签（用空格分隔）", placeholder="例如：重点 期末 必背")
+
+            # 声明确认
+            confirm_share = st.checkbox(
+                "我确认这份资料是我自己整理的，内容真实有效",
+                value=False,
+            )
+
+            share_submitted = st.form_submit_button("📤 发布资料", use_container_width=True, type="primary")
+
+            if share_submitted:
+                if not res_title.strip() or not res_desc.strip():
+                    st.warning("请填写资料标题和简介")
+                elif not res_content.strip():
+                    st.warning("请提供资料内容")
+                elif not confirm_share:
+                    st.warning("请勾选确认声明后再发布")
+                else:
+                    if "user_resources" not in st.session_state:
+                        st.session_state.user_resources = []
+
+                    new_res = {
+                        "id": f"ures_{len(st.session_state.user_resources)+1}",
+                        "title": res_title.strip(),
+                        "course_id": res_course.split()[0],
+                        "course_name": res_course.split(" ", 1)[1],
+                        "type": res_type[1],
+                        "type_label": res_type[0],
+                        "uploader": "我（当前用户）",
+                        "avatar": "我",
+                        "upload_time": "刚刚",
+                        "downloads": 0,
+                        "likes": 0,
+                        "rating": 0,
+                        "tags": res_tags.split() if res_tags else [],
+                        "is_verified": False,  # 用户分享的默认未认证
+                        "distilled_preview": res_content.strip()[:1500],
+                        "description": res_desc.strip(),
+                    }
+                    st.session_state.user_resources.insert(0, new_res)
+                    st.success("✅ 资料发布成功！其他同学可以看到并下载了。")
+                    st.info("💡 提示：你的资料显示为「待审核」状态，管理员审核后可获得认证标识。")
+                    st.rerun()
+
+    # ========== 显示用户分享的资料 ==========
+    if "user_resources" in st.session_state and st.session_state.user_resources:
+        st.markdown("---")
+        st.markdown(
+            "<div style='font-weight:700;color:#1a1a2e;margin-bottom:1rem;'>"
+            "📋 我分享的资料</div>",
+            unsafe_allow_html=True,
+        )
+
+        for res in st.session_state.user_resources:
+            verified_badge = "✅ 已认证" if res["is_verified"] else "⏳ 待审核"
+            badge_color = "#51cf66" if res["is_verified"] else "#ffc107"
+
+            st.markdown(
+                f"<div class='resource-card' style='border-left:4px solid {badge_color};'>"
+                f"<div style='display:flex;align-items:center;margin-bottom:0.5rem;'>"
+                f"<span style='margin-right:0.5rem;'>{res['type_label']}</span>"
+                f"<span style='font-weight:700;color:#1a1a2e;'>{res['title']}</span>"
+                f"<span style='margin-left:auto;background:{badge_color};color:white;"
+                f"padding:0.15rem 0.6rem;border-radius:10px;font-size:0.75rem;'>{verified_badge}</span></div>"
+                f"<div style='color:#555;font-size:0.9rem;margin-bottom:0.5rem;'>{res['description']}</div>"
+                f"<div style='display:flex;gap:1rem;color:#888;font-size:0.82rem;flex-wrap:wrap;'>"
+                f"<span>📚 {res['course_name']}</span>"
+                f"<span>👁️ {res['downloads']}次下载</span>"
+                f"<span>❤️ {res['likes']}</span>"
+                f"<span>🕐 {res['upload_time']}</span></div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+            with st.expander("查看资料详情 👇", expanded=False):
+                st.markdown(res["distilled_preview"])
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.download_button(
+                        "📥 下载",
+                        data=res["distilled_preview"],
+                        file_name=f"{res['title']}.md",
+                        mime="text/markdown",
+                        use_container_width=True,
+                    )
+                with c2:
+                    st.button("❤️ 点赞", key=f"res_like_{res['id']}", use_container_width=True)
+
+            st.markdown("")
+
     st.markdown("---")
 
     # 左右布局：帖子列表 + 排行榜
