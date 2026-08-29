@@ -585,36 +585,41 @@ elif current_page == "开始蒸馏":
                     st.session_state["chosen_method"] = key
                     st.rerun()
 
-        # 自定义要求入口
+        # 自定义要求入口（卡片式：直接展示输入框 + 确认按钮）
         is_custom = st.session_state.get("chosen_method") == "custom"
-        if st.button("✍️ 我想自定义要求（用自然语言告诉 AI 你的复习目标）",
-                     use_container_width=True,
-                     type="primary" if is_custom else "secondary",
-                     key="btn_custom_method"):
-            st.session_state["chosen_method"] = "custom"
-            st.rerun()
+        _custom_card_style = (
+            "border:2px solid #667eea;" if is_custom
+            else "border:1.5px dashed #667eea44;"
+        )
+        _custom_bg = "#eef1ff;" if is_custom else "#fafbff;"
+        st.markdown(
+            f"<div style='margin-top:0.8rem; padding:1rem; border-radius:12px; "
+            f"background:{_custom_bg}; {_custom_card_style}'>"
+            f"<div style='font-weight:700; color:#1a1a2e; font-size:1.05rem;'>✍️ 自定义要求</div>"
+            f"<div style='color:#8892b0; font-size:0.85rem; margin-bottom:0.6rem;'>"
+            f"用自然语言告诉 AI 你的复习目标</div>",
+            unsafe_allow_html=True,
+        )
+        custom_requirement = st.text_area(
+            "你的复习要求",
+            value=st.session_state.get("custom_requirement", ""),
+            placeholder="例如：只看第一章和第三章，去掉公式，重点讲物质观相关的概念；只要概念和易错点；把每一条都给出考法...",
+            height=90,
+            key="custom_req_input",
+        )
+        col_confirm, col_tip = st.columns([1, 3])
+        with col_confirm:
+            if st.button("✅ 使用此要求", use_container_width=True, type="primary",
+                         key="btn_custom_confirm"):
+                st.session_state["chosen_method"] = "custom"
+                st.session_state["custom_requirement"] = custom_requirement.strip()
+                st.rerun()
+        with col_tip:
+            if not st.session_state.get("api_key"):
+                st.caption("💡 未配 API Key 时仅支持简单指令；配置后可完整理解自然语言")
+        st.markdown("</div>", unsafe_allow_html=True)
 
         chosen_method = st.session_state.get("chosen_method", method_keys_list[0])
-        if chosen_method == "custom":
-            st.markdown(
-                "<div style='margin-top:0.8rem; padding:1rem; border:1.5px dashed #667eea66; "
-                "border-radius:10px; background:#fafbff;'>"
-                "<div style='font-weight:700; color:#1a1a2e; margin-bottom:0.4rem;'>🎯 描述你的要求</div>"
-                "<div style='color:#8892b0; font-size:0.85rem; margin-bottom:0.6rem;'>"
-                "例如：只看第一章和第三章，去掉公式，重点讲物质观相关的概念</div>",
-                unsafe_allow_html=True,
-            )
-            custom_requirement = st.text_area(
-                "你的复习要求",
-                value=st.session_state.get("custom_requirement", ""),
-                placeholder="比如：只要概念和易错点；重点展开第2章；把每一条都给出考法；我不要思维导图，要文字版...",
-                height=100,
-                key="custom_req_input",
-            )
-            st.session_state["custom_requirement"] = custom_requirement
-            st.markdown("</div>", unsafe_allow_html=True)
-            if not st.session_state.get("api_key"):
-                st.caption("💡 提示：未配置 API Key 时只能识别「章节 / 类型 / 重点词」类简单要求；配置后可完整理解。")
 
         st.markdown("---")
         st.markdown("### 第三步：开始蒸馏")
