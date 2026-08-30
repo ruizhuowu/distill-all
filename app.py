@@ -576,6 +576,92 @@ elif current_page == "开始蒸馏":
         st.markdown(result)
         st.markdown("</div>", unsafe_allow_html=True)
 
+        # ========== 社区智慧板块 ==========
+        # 根据蒸馏标题匹配相关课程，提取社区精华建议
+        distill_title_lower = (st.session_state.distill_title or "").lower()
+        matched_course_id = None
+        matched_course_name = ""
+
+        # 匹配课程
+        for c in mock_data.COURSES:
+            if c["code"] in distill_title_lower or c["name"] in st.session_state.distill_title or c["id"] in distill_title_lower:
+                matched_course_id = c["id"]
+                matched_course_name = c["name"]
+                break
+
+        # 如果匹配到课程，提取该课程的社区精华
+        if matched_course_id:
+            related_posts = [p for p in mock_data.POSTS if p.get("course_id") == matched_course_id]
+
+            # 如果没找到精确匹配，用模糊匹配
+            if not related_posts:
+                for p in mock_data.POSTS:
+                    if any(kw in distill_title_lower for kw in ["马原", "毛概", "高数", "英语", "会计", "计基", "数学", "政治"]):
+                        related_posts.append(p)
+
+            if related_posts:
+                st.markdown("---")
+                st.markdown(
+                    "<div style='background:linear-gradient(135deg,#e8f4fd,#d6eaf8);"
+                    "border:2px solid #3498db;border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:1rem;'>"
+                    "<div style='display:flex;align-items:center;margin-bottom:0.8rem;'>"
+                    "<span style='font-size:1.3rem;margin-right:0.5rem;'>💡</span>"
+                    "<div><span style='font-weight:700;color:#1a1a2e;font-size:1.05rem;'>来自社区的备考智慧</span>"
+                    "<br><span style='color:#2980b9;font-size:0.85rem;'>"
+                    f"结合 {len(related_posts)} 位同学在「{matched_course_name}」讨论区的经验分享</span></div></div>",
+                    unsafe_allow_html=True,
+                )
+
+                # 显示精选建议（最多3条）
+                for i, post in enumerate(related_posts[:3]):
+                    # 提取帖子的核心建议（取前200字的关键内容）
+                    tip_content = post["content"]
+                    # 如果有最佳答案，优先用最佳答案的核心部分
+                    if post.get("best_answer"):
+                        tip_content = post["best_answer"][:300]
+
+                    # 根据帖子类型选择图标和颜色
+                    type_icons = {
+                        "experience": ("💡", "#27ae60"),
+                        "pitfall": ("⚠️", "#e74c3c"),
+                        "help": ("❓", "#f39c12"),
+                        "discussion": ("💬", "#3498db"),
+                        "share": ("📝", "#9b59b6"),
+                        "question": ("❓", "#1abc9c"),
+                    }
+                    icon, color = type_icons.get(post["type"], ("💬", "#667eea"))
+
+                    st.markdown(
+                        f"<div style='background:white;border-radius:10px;"
+                        f"padding:1rem;margin-bottom:0.8rem;border-left:4px solid {color};'>"
+                        f"<div style='display:flex;align-items:center;margin-bottom:0.5rem;'>"
+                        f"<span style='margin-right:0.4rem;'>{icon}</span>"
+                        f"<span style='font-weight:700;color:{color};'>{post['type_label']} · 来自 @{post['author']}</span>"
+                        f"<span style='color:#888;font-size:0.8rem;margin-left:auto;'>👍 {post['likes']}人认同</span></div>"
+                        f"<div style='color:#444;font-size:0.92rem;line-height:1.6;'>{tip_content[:250]}{'...' if len(tip_content)>250 else ''}</div>"
+                        f"<div style='margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;'>",
+                        unsafe_allow_html=True,
+                    )
+                    # 显示标签
+                    for tag in post.get("tags", [])[:3]:
+                        st.markdown(
+                            f"<span class='tag' style='background:{color}22;color:{color};"
+                            f"font-size:0.75rem;padding:0.12rem 0.5rem;'>{tag}</span>",
+                            unsafe_allow_html=True,
+                        )
+                    st.markdown("</div></div>", unsafe_allow_html=True)
+
+                # 查看更多链接
+                st.markdown(
+                    f"<div style='text-align:center;margin-top:0.5rem;'>"
+                    f"<a href='#' style='color:#3498db;font-weight:600;font-size:0.9rem;text-decoration:none;' "
+                    f"onclick=\"alert('请前往社区页面查看完整讨论')\">"
+                    f"👉 前往「{matched_course_name}」社区查看全部讨论 →</a></div>",
+                    unsafe_allow_html=True,
+                )
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
         # 编辑模式
         with st.expander("📝 编辑蒸馏结果", expanded=False):
             edited = st.text_area(
