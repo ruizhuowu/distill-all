@@ -682,16 +682,120 @@ elif current_page == "开始蒸馏":
 
         # 导出按钮
         st.markdown("")
-        col_e1, col_e2 = st.columns(2)
+        
+        # 获取最终结果内容
+        final_result = st.session_state.edited_result if st.session_state.edited_result else result
+        
+        col_e1, col_e2, col_e3, col_e4 = st.columns(4)
+        
         with col_e1:
             st.download_button(
-                "📥 下载 Markdown",
-                data=result,
+                "📄 下载 Markdown",
+                data=final_result,
                 file_name=f"{st.session_state.distill_title}_蒸馏结果.md",
                 mime="text/markdown",
                 use_container_width=True,
             )
+        
         with col_e2:
+            # 导出为 Word
+            def create_word_doc(markdown_content: str) -> bytes:
+                from docx import Document
+                from docx.shared import Pt, RGBColor
+                from docx.enum.text import WD_ALIGN_PARAGRAPH
+                
+                doc = Document()
+                
+                lines = markdown_content.split('\n')
+                for line in lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    if line.startswith('# '):
+                        p = doc.add_heading(line[2:], level=1)
+                    elif line.startswith('## '):
+                        p = doc.add_heading(line[3:], level=2)
+                    elif line.startswith('### '):
+                        p = doc.add_heading(line[4:], level=3)
+                    elif line.startswith('- ') or line.startswith('* '):
+                        p = doc.add_paragraph(line[2:], style='List Bullet')
+                    elif line.startswith('**') and line.endswith('**'):
+                        p = doc.add_paragraph()
+                        run = p.add_run(line.strip('*'))
+                        run.bold = True
+                    else:
+                        # 处理行内加粗
+                        p = doc.add_paragraph()
+                        parts = line.split('**')
+                        for i, part in enumerate(parts):
+                            run = p.add_run(part)
+                            if i % 2 == 1:
+                                run.bold = True
+                
+                import io
+                buf = io.BytesIO()
+                doc.save(buf)
+                buf.seek(0)
+                return buf.getvalue()
+            
+            word_data = create_word_doc(final_result)
+            st.download_button(
+                "📝 下载 Word",
+                data=word_data,
+                file_name=f"{st.session_state.distill_title}_蒸馏结果.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+            )
+        
+        with col_e3:
+            # 导出为 PDF (使用 HTML 转 PDF)
+            def create_pdf(markdown_content: str) -> bytes:
+                import markdown as md
+                import base64
+                
+                html_content = md.markdown(markdown_content, extensions=['tables', 'fenced_code'])
+                
+                full_html = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <style>
+                        body {{ font-family: "Microsoft YaHei", sans-serif; padding: 40px; line-height: 1.8; color: #333; }}
+                        h1 {{ color: #e63946; border-bottom: 3px solid #e63946; padding-bottom: 10px; }}
+                        h2 {{ color: #457b9d; margin-top: 30px; }}
+                        h3 {{ color: #1d3557; }}
+                        table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
+                        th, td {{ border: 1px solid #ddd; padding: 10px; text-align: left; }}
+                        th {{ background-color: #f1faee; }}
+                        code {{ background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; }}
+                        pre {{ background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 8px; overflow-x: auto; }}
+                        blockquote {{ border-left: 4px solid #e63946; padding-left: 20px; color: #666; margin: 15px 0; }}
+                        strong {{ color: #e63946; }}
+                    </style>
+                </head>
+                <body>{html_content}</body>
+                </html>
+                """
+                
+                try:
+                    import pdfkit
+                    return pdfkit.from_string(full_html, output_path=False)
+                except:
+                    # 如果 pdfkit 不可用，返回 HTML 作为备选
+                    return full_html.encode('utf-8')
+            
+            pdf_data = create_pdf(final_result)
+            st.download_button(
+                "📕 下载 PDF",
+                data=pdf_data,
+                file_name=f"{st.session_state.distill_title}_蒸馏结果.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
+        
+        with col_e4:
             if st.button("🔄 蒸馏新材料", use_container_width=True):
                 st.session_state.distill_result = None
                 st.session_state.edited_result = None
